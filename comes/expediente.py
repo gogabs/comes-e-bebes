@@ -610,7 +610,10 @@ class Service:
     def _coffee_down(self):
         spot = self._spot(COZINHA, self._at("cafeteira"))
         if self.coffee is None:
-            if not self.casa.take("cafe"):
+            beans = next((i for i in self.hands if i.kind == "cafe_graos"), None)
+            if beans is not None:
+                self.hands.remove(beans)
+            elif not self.casa.take("cafe"):
                 self.ui.say("Acabou o café em grão. Compre na abertura.")
                 return
             self.coffee = "graos"
@@ -871,7 +874,8 @@ class Service:
         if name == "pia":
             return any(i.kind == "louca" for i in self.hands)
         if name == "cafeteira":
-            return self.coffee == "pronto"
+            return self.coffee == "pronto" or (
+                self.coffee is None and any(i.kind == "cafe_graos" for i in self.hands))
         if name == "lixeira":
             return any(i.kind == "queimado" for i in self.hands)
         return False

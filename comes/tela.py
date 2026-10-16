@@ -27,7 +27,8 @@ RAW = {"misto_montado": "misto", "hamburguer_cru": "carne", "batata_crua": "bata
        "fritas_sem_sal": "fritas", "laranja_cortada": "laranja",
        "mexerica_descascada": "mexerica", "pao_manteiga": "pao_chapa",
        "queijo_montado": "queijo_quente", "leite_chocolate": "leite",
-       "morango_leite": "morango", "pastel_cru": "pastel", "coxinha_crua": "coxinha"}
+       "morango_leite": "morango", "pastel_cru": "pastel", "coxinha_crua": "coxinha",
+       "cafe_graos": "graos"}
 # Ingredientes do estoque, na bancada: ícone, ou uma bolinha com a cor.
 INGREDIENT_ICONS = {"carne": "carne", "batata": "batata", "laranja": "laranja",
                     "mexerica": "mexerica", "leite": "leite", "morango": "morango",

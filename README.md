@@ -95,7 +95,8 @@ leva duas coisas de cada vez.
 
 Na abertura, a **Lojinha** vende equipamentos. O primeiro é a **cafeteira**
 (250 reais): ela entra no fim da cozinha, depois da lixeira, e põe o
-cafezinho no cardápio. B põe o grão, segurar B mói, e soltar passa o café.
+cafezinho no cardápio. O grão vem da bancada (ou B direto na cafeteira, que pega do
+estoque), segurar B mói, e soltar passa o café.
 Moer pouco deixa o pó grosso, moer demais amarga, e o café pronto esfria se
 ficar esperando. No inverno é o que mais sai.
 

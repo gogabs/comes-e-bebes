@@ -59,6 +59,7 @@ ITEM_NAMES = {
     "coxinha_crua": "coxinha para fritar",
     "coxinha": "coxinha",
     "cafezinho": "cafezinho",
+    "cafe_graos": "café em grão",
     "queimado": "comida queimada",
     "louca": "louça suja",
 }
@@ -122,6 +123,7 @@ ASSEMBLY = (
     (frozenset(("morango", "leite")), "morango_leite"),
     (frozenset(("massa", "queijo")), "pastel_cru"),
     (frozenset(("coxinha",)), "coxinha_crua"),
+    (frozenset(("cafe",)), "cafe_graos"),
 )
 
 # Fogo: o que entra cru e sai pronto, e o nome curto usado nas falas.

@@ -71,8 +71,9 @@ HELP = (
      "estragam em poucos dias. Cada receita tem uma de cinco faixas de preço, de muito barato "
      "a muito caro: barato traz mais gente e mais gorjeta, caro rende mais por prato mas traz "
      "menos clientes, menos pacientes. Na lojinha você compra equipamentos para a casa, como "
-     "a cafeteira, que vai para o fim da cozinha e põe o cafezinho no cardápio. Na cafeteira, "
-     "B põe o grão, segure B para moer e solte para passar; moer pouco deixa o pó grosso e "
+     "a cafeteira, que vai para o fim da cozinha e põe o cafezinho no cardápio. Pegue o café "
+     "em grão na bancada e leve à cafeteira, ou aperte B nela, que ela pega o grão do "
+     "estoque. Depois, segure B para moer e solte para passar; moer pouco deixa o pó grosso e "
      "moer demais amarga. Quando o café fica pronto, pegue logo, que ele esfria. O que os fregueses gostam muda com a estação: no verão "
      "sai muito suco e batata frita."),
     ("Botões",

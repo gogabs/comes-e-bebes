@@ -118,6 +118,18 @@ class LojinhaTest(unittest.TestCase):
         self.assertEqual(s.hands[0].kind, "cafezinho")
         self.assertEqual(s.hands[0].quality, 1.0)
 
+    def test_cafe_da_bancada_vai_para_a_cafeteira(self):
+        s, ui, casa, _, _ = new_service(casa=com_cafeteira())
+        before = casa.count("cafe")
+        self.assertTrue(bench(s, "ing:cafe"))
+        self.assertEqual(s.hands[0].kind, "cafe_graos")
+        self.assertEqual(casa.count("cafe"), before - 1)
+        focus(s, COZINHA, s.layout[COZINHA].index("cafeteira"))
+        s.action_down()
+        self.assertEqual(s.hands, [])
+        self.assertEqual(s.coffee, "graos")
+        self.assertEqual(casa.count("cafe"), before - 1)     # não gastou outro
+
     def test_moer_demais_amarga_e_esperar_esfria(self):
         s, ui, _, _, _ = new_service(casa=com_cafeteira())
         focus(s, COZINHA, s.layout[COZINHA].index("cafeteira"))
