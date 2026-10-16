@@ -64,7 +64,7 @@ def pending(s):
              "mexerica_descascada": "suco_mexerica", "pao_manteiga": "pao_chapa",
              "queijo_montado": "queijo_quente", "leite_chocolate": "chocolate_quente",
              "morango_leite": "vitamina_morango", "pastel_cru": "pastel",
-             "coxinha_crua": "coxinha"}
+             "coxinha_crua": "coxinha", "cafe_graos": "cafezinho"}
     have = [chain.get(k, k) for k in have]
     for k in have:
         if k in want:
@@ -115,6 +115,9 @@ def act(s):
     if s.coffee == "pronto" and free:
         station(s, "cafeteira")
         return s.action_down()
+    if "cafe_graos" in kinds(s) and s.coffee is None:
+        station(s, "cafeteira")
+        return s.action_down()
     if s.coffee == "graos":
         station(s, "cafeteira")
         s.action_down()
@@ -139,8 +142,7 @@ def act(s):
         for k in pending(s):
             if k == "cafezinho":
                 if s.coffee is None and s.casa.count("cafe"):
-                    station(s, "cafeteira")
-                    return s.action_down()
+                    return make(s, ["ing:cafe"])
                 continue
             parts = {"xburger": ["ing:carne"], "misto": ["ing:pao", "ing:presunto", "ing:queijo"],
                      "fritas": ["ing:batata"], "suco": ["ing:laranja"],
