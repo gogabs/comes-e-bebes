@@ -112,7 +112,7 @@ class Service:
         self.tables = [Table(i) for i in range(C.TABLES)]
         self.cookers = {"chapa": Station("chapa", C.CHAPA_SLOTS),
                         "fritadeira": Station("fritadeira", C.FRITADEIRA_SLOTS)}
-        self.blender = None               # None, "laranja_cortada" ou "suco"
+        self.blender = None               # None, a fruta preparada ou o suco pronto
         self.blend = 0.0
         self.blending = False
         self.juice_quality = 1.0
@@ -151,6 +151,9 @@ class Service:
 
     def start(self):
         self.ui.play("porta")
+        ambient = D.SEASON_INFO[self.casa.season]["ambient"]
+        if ambient:
+            self.ui.loop("ambiente", ambient, None, volume=C.AMBIENT_VOLUME)
         self.ui.say("A casa abriu: %s, %s. Você está no salão, na frente da %s."
                     % (clock(self.minutes), D.weather(self.casa.weather)[1],
                        self.tables[self.index[SALAO]].name.lower()))
@@ -206,7 +209,8 @@ class Service:
         weights = [prefs[k] * self.casa.tier(k)[2] for k in menu]
         first = self.rng.choices(menu, weights)[0]
         order = [first]
-        if self.rng.random() < C.TWO_ITEMS_CHANCE:
+        special = self.casa.special()
+        if self.rng.random() < (special[2] if special else C.TWO_ITEMS_CHANCE):
             others = [k for k in menu if k != first] or menu
             ow = [prefs[k] * self.casa.tier(k)[2] for k in others]
             order.append(self.rng.choices(others, ow)[0])
@@ -216,6 +220,8 @@ class Service:
         order = self._choose_order()
         spot = self._spot(SALAO, table.index)
         self.ui.play("porta")
+        if self.casa.weather == "vento":
+            self.ui.play("folhas")
         if not order:
             self._rep(C.REP_NOTHING)
             self.ui.say("Um cliente entrou, olhou o cardápio e foi embora: não tinha nada que "
@@ -352,6 +358,9 @@ class Service:
         tip = bill * C.TIP_MAX * max(0.0, (quality - 0.5) / 0.5) * table.mood * tip_mult
         if in_season:
             tip *= D.IN_SEASON_TIP
+        special = self.casa.special()
+        if special:
+            tip *= special[3]
         tip = int(round(tip))
         self.casa.money += bill + tip
         self.stats["sales"] += bill
@@ -526,16 +535,17 @@ class Service:
     def _blender_down(self):
         spot = self._spot(COZINHA, STATIONS.index("liquidificador"))
         if self.blender is None:
-            item = next((i for i in self.hands if i.kind == "laranja_cortada"), None)
+            item = next((i for i in self.hands if i.kind in D.BLENDS), None)
             if item is None:
-                self.ui.say("Liquidificador vazio. Corte laranjas na bancada.")
+                self.ui.say("Liquidificador vazio. Prepare a fruta na bancada.")
                 return
             self.hands.remove(item)
-            self.blender = "laranja_cortada"
+            self.blender = item.kind
             self.blend = 0.0
             self.ui.play("colocar", spot)
-            self.ui.say("Laranjas no liquidificador. Segure B para bater.")
-        elif self.blender == "laranja_cortada":
+            self.ui.say("%s no liquidificador. Segure B para bater."
+                        % D.BLENDS[item.kind][1].capitalize())
+        elif self.blender in D.BLENDS:
             self.blending = True
             self.ui.loop("liquidificador", "liquidificador", spot, pitch=self._blend_pitch())
         else:
@@ -549,22 +559,23 @@ class Service:
         if self.blend < C.BLEND_MIN:
             self.ui.say("Ainda tem pedaço. Segure mais um pouco.")
             return
-        self.blender = "suco"
+        self.blender = D.BLENDS[self.blender][0]
         self.juice_quality = 1.0 if self.blend <= C.BLEND_MAX else C.WARM_JUICE_QUALITY
         self._take_juice()
 
     def _take_juice(self):
         spot = self._spot(COZINHA, STATIONS.index("liquidificador"))
+        name = D.item_name(self.blender).capitalize()
         warm = ", mas esquentou um pouco" if self.juice_quality < 1.0 else ""
         if len(self.hands) >= C.HANDS:
-            self.ui.say("Suco pronto%s. Suas mãos estão cheias: ele espera no liquidificador."
-                        % warm)
+            self.ui.say("%s pronto%s. Suas mãos estão cheias: ele espera no liquidificador."
+                        % (name, warm))
             return
-        self.hands.append(Item("suco", quality=self.juice_quality))
+        self.hands.append(Item(self.blender, quality=self.juice_quality))
         self.blender = None
         self.blend = 0.0
         self.ui.play("servir_copo", spot)
-        self.ui.say("Suco pronto%s. Na mão." % warm)
+        self.ui.say("%s pronto%s. Na mão." % (name, warm))
 
     def _blend_pitch(self):
         return 0.8 + 0.5 * min(1.0, self.blend / C.BLEND_MAX)
@@ -702,8 +713,11 @@ class Service:
         if name in self.cookers:
             return self._station_text(self.cookers[name])
         if name == "liquidificador":
-            return {None: "vazio", "laranja_cortada": "com laranjas",
-                    "suco": "com suco pronto"}[self.blender]
+            if self.blender is None:
+                return "vazio"
+            if self.blender in D.BLENDS:
+                return "com " + D.BLENDS[self.blender][1]
+            return "com %s pronto" % D.item_name(self.blender)
         if name == "pia":
             return self._sink_text()
         if name == "bancada":
@@ -749,7 +763,7 @@ class Service:
             return s.fire or any(c.stage >= 1 or (c.turn_cued and not c.turned)
                                  for c in s.slots)
         if name == "liquidificador":
-            return self.blender == "suco"
+            return self.blender is not None and self.blender not in D.BLENDS
         if name == "pia":
             return any(i.kind == "louca" for i in self.hands)
         if name == "lixeira":
@@ -838,7 +852,7 @@ class Service:
             self.on_closed()
 
     def _stop_loops(self):
-        for key in ("chapa", "fritadeira", "liquidificador"):
+        for key in ("chapa", "fritadeira", "liquidificador", "ambiente"):
             self.ui.stop(key)
 
     def _check_end(self, dt):
@@ -880,6 +894,9 @@ class Service:
 
     def _comment(self):
         s = self.stats
+        special = self.casa.special()
+        if special and s["served"] and not s["fires"]:
+            return "que %s gostoso, obrigada pelo carinho!" % special[0]
         if s["fires"]:
             return "que fumaceira na cozinha hoje!"
         if s["left"] >= 3:

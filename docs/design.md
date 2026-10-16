@@ -245,6 +245,22 @@ O que muda com a estação:
   e pedido preferido, que também muda com a estação. Lembrar o pedido
   deles (e acertar) é parte do conforto do jogo.
 
+### Outono (feito)
+
+- **Receitas novas**, aprendidas no dia 1 do outono e que ficam na casa
+  depois: pão na chapa (pão e manteiga na bancada, chapa, virar no meio) e
+  suco de mexerica (fruta da estação, descascada na bancada e batida no
+  liquidificador). O fornecedor dá um pacote de cada ingrediente novo.
+- **Mexerica só nas compras no outono.** Fora de época some da lista; o que
+  sobrou estraga em 5 dias.
+- **Gostos:** pão na chapa e suco de mexerica são os mais pedidos, misto
+  quente sobe e suco de laranja cai.
+- **Clima:** dias de vento frio, com folhas na porta quando entra cliente.
+- **Som de fundo** do expediente: vento e folhas.
+- **Dia das Mães** (dia 12): 50% mais movimento, famílias que quase sempre
+  pedem dois itens e gorjeta 50% maior.
+- Jogo novo escolhe a estação do primeiro dia.
+
 ## 11. Primeiro protótipo
 
 Só a lanchonete, para testar se o ritmo é gostoso:

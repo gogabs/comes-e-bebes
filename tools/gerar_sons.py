@@ -223,6 +223,17 @@ def main():
     write("passos", mix(*[noise(0.08, 0.9, decay=0.03) for _ in range(4)],
                         offsets=[0, 0.45, 0.9, 1.35]), 0.6)
     write("lixo_fora", mix(noise(0.08, 0.6, decay=0.03), bell(600, 0.4, 0.1), offsets=[0, 0.02]), 0.6)
+    # estações
+    def gust(x):
+        return 0.35 + 0.3 * math.sin(2 * math.pi * 2 * x) ** 2 + 0.2 * math.sin(2 * math.pi * 3 * x) ** 2
+    rustle = [noise(0.25, 0.2, shape=hump) for _ in range(6)]
+    write("outono", crossfade_loop(mix(noise(6.0, 0.97, shape=gust), *rustle,
+                                       offsets=[0, 0.7, 1.6, 2.4, 3.3, 4.2, 5.1],
+                                       gains=[1.0] + [0.25] * 6)), 0.6, loop=True)
+    write("folhas", mix(*[noise(0.18, 0.25, shape=hump) for _ in range(4)],
+                        offsets=[0, 0.12, 0.22, 0.35]), 0.45)
+    write("festa", mix(*[tone(f, 0.4, 3, 0.2) for f in (523, 659, 784, 659, 784, 1047)],
+                       offsets=[0, 0.12, 0.24, 0.36, 0.48, 0.6]), 0.55)
     print("sons gerados em %s" % os.path.normpath(OUT))
 
 

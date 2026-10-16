@@ -40,6 +40,7 @@ COOK = {
     "hamburguer_cru": (14.0, 7.0, 8.0, 10.0),
     "misto_montado": (12.0, 7.0, 8.0, 10.0),
     "batata_crua": (16.0, 7.0, 8.0, 10.0),
+    "pao_manteiga": (8.0, 6.0, 7.0, 10.0),
 }
 CHAPA_SLOTS = 2
 FRITADEIRA_SLOTS = 1
@@ -90,6 +91,7 @@ SCRAPE_TIME = 1.2             # segundos segurando B por unidade de gordura
 WASH_TIME = 0.4               # entre um prato lavado e outro
 TRASH_TIME = 2.5              # levar o lixo para fora
 AMBIENT_EVERY = 2.5           # um som de sujeira a cada tanto, na limpeza
+AMBIENT_VOLUME = 0.25         # som de fundo da estação, no expediente
 
 # Distância dos sons (metros): mesas à frente, cozinha atrás.
 SALAO_Z = -3.0

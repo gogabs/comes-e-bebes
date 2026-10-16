@@ -30,9 +30,9 @@ def stars(rep):
 class Casa:
     SAVE_VERSION = 1
 
-    def __init__(self):
+    def __init__(self, season=C.FIRST_SEASON):
         self.year = 1
-        self.season = C.FIRST_SEASON
+        self.season = season
         self.day = 1
         self.money = C.START_MONEY
         self.reputation = C.START_REPUTATION
@@ -40,7 +40,8 @@ class Casa:
         for k, packs in D.START_PACKS.items():
             for _ in range(packs):
                 self._add_lot(k)
-        self.menu = {k: True for k in D.RECIPE_ORDER}
+        self.learned = list(D.BASE_RECIPES)
+        self.menu = {k: k in self.learned for k in D.RECIPE_ORDER}
         self.prices = {k: C.DEFAULT_TIER for k in D.RECIPE_ORDER}
         self.dirt = {k: 0 for k in DIRT_KEYS}
         self.morning_dirt = 0
@@ -89,7 +90,19 @@ class Casa:
         self.stock[key] = [lot for lot in lots if lot[0] > 0]
         return True
 
+    def can_buy(self, key):
+        """Fruta da estação só aparece nas compras na estação dela."""
+        seasons = D.INGREDIENT_SEASONS.get(key)
+        return seasons is None or self.season in seasons
+
+    def shop_keys(self):
+        """O que aparece nas compras: só o que as receitas conhecidas usam."""
+        used = set(k for r in self.known_recipes() for k in D.RECIPES[r][2])
+        return [k for k in D.INGREDIENT_ORDER if k in used and self.can_buy(k)]
+
     def buy(self, key):
+        if not self.can_buy(key):
+            return False
         price = D.INGREDIENTS[key][3]
         if self.money < price:
             return False
@@ -106,6 +119,8 @@ class Casa:
         n = self.count(key)
         lots = self.stock[key]
         text = "%s: %d em estoque" % (name.capitalize(), n)
+        if key in D.INGREDIENT_SEASONS:
+            text = text.replace(":", ", da estação:", 1)
         if lots and days < 999:
             soon = min(d for _, d in lots)
             text += ", estraga em %d %s" % (soon, "dia" if soon == 1 else "dias")
@@ -118,15 +133,23 @@ class Casa:
     def tier(self, recipe):
         return C.PRICE_TIERS[self.prices[recipe]]
 
+    def known_recipes(self):
+        return [k for k in D.RECIPE_ORDER if k in self.learned]
+
     def active_menu(self):
-        return [k for k in D.RECIPE_ORDER if self.menu[k]]
+        return [k for k in self.known_recipes() if self.menu.get(k)]
+
+    def special(self):
+        """A data especial de hoje, ou None: (nome, movimento, dois itens, gorjeta, fala)."""
+        return D.SEASON_INFO[self.season]["special"].get(self.day)
 
     def arrival_factor(self):
         """Movimento do dia: preços, reputação e clima juntos."""
         menu = self.active_menu() or list(D.RECIPE_ORDER)
         prices = sum(self.tier(k)[2] for k in menu) / len(menu)
         rep = 0.6 + 0.16 * self.reputation           # 2,5 estrelas -> 1,0
-        return prices * rep * D.weather(self.weather)[2]
+        special = self.special()
+        return prices * rep * D.weather(self.weather)[2] * (special[1] if special else 1.0)
 
     # --- sujeira e vigilância --------------------------------------------
     def total_dirt(self):
@@ -163,6 +186,23 @@ class Casa:
         weights = [w[4][self.season] for w in D.WEATHER]
         self.weather = rng.choices([w[0] for w in D.WEATHER], weights)[0]
         lines = ["%s. %s." % (self.date_text(), D.weather(self.weather)[1].capitalize())]
+        if self.day == 1:
+            lines.append(D.SEASON_INFO[self.season]["arrival"])
+            gifts = []
+            for k in D.SEASON_RECIPES.get(self.season, ()):
+                if k not in self.learned:
+                    self.learned.append(k)
+                    self.menu[k] = True
+                    for ing in D.RECIPES[k][2]:
+                        if self.count(ing) == 0 and self.can_buy(ing):
+                            self._add_lot(ing)
+                            gifts.append(D.INGREDIENTS[ing][0])
+            if gifts:
+                lines.append("De presente do fornecedor, para começar: um pacote de %s."
+                             % " e um de ".join(gifts))
+        special = self.special()
+        if special:
+            lines.append(special[4])
         spoiled = []
         for key in D.INGREDIENT_ORDER:
             lost = sum(q for q, d in self.stock[key] if d <= 0)
@@ -259,6 +299,17 @@ class Casa:
         for key, value in data.items():
             if key != "versao" and key in casa.__dict__:
                 setattr(casa, key, copy.deepcopy(value))
+        # Saves de versões com menos receitas e ingredientes.
+        for k in D.INGREDIENTS:
+            casa.stock.setdefault(k, [])
+        for k in D.RECIPE_ORDER:
+            casa.menu.setdefault(k, False)
+            casa.prices.setdefault(k, C.DEFAULT_TIER)
+        for k in DIRT_KEYS:
+            casa.dirt.setdefault(k, 0)
+        if "learned" not in data:
+            casa.learned = list(D.BASE_RECIPES) + [k for k in D.RECIPE_ORDER
+                                                   if k not in D.BASE_RECIPES and casa.menu[k]]
         if casa.checkpoint is None:
             casa.save_checkpoint()
         return casa

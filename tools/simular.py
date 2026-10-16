@@ -56,9 +56,10 @@ def pending(s):
     for st in s.cookers.values():
         have += [D.COOKED[c.kind] for c in st.slots]
     if s.blender:
-        have.append("suco")
+        have.append(D.BLENDS[s.blender][0] if s.blender in D.BLENDS else s.blender)
     chain = {"hamburguer": "xburger", "hamburguer_cru": "xburger", "misto_montado": "misto",
-             "fritas_sem_sal": "fritas", "batata_crua": "fritas", "laranja_cortada": "suco"}
+             "fritas_sem_sal": "fritas", "batata_crua": "fritas", "laranja_cortada": "suco",
+             "mexerica_descascada": "suco_mexerica", "pao_manteiga": "pao_chapa"}
     have = [chain.get(k, k) for k in have]
     for k in have:
         if k in want:
@@ -99,18 +100,18 @@ def act(s):
     if "fritas_sem_sal" in hand:
         return make(s, ["mao:%d" % hand.index("fritas_sem_sal"), "ing:sal"])
     for raw, name in (("hamburguer_cru", "chapa"), ("misto_montado", "chapa"),
-                      ("batata_crua", "fritadeira")):
+                      ("pao_manteiga", "chapa"), ("batata_crua", "fritadeira")):
         st = s.cookers[name]
         if raw in hand and len(st.slots) < st.cap:
             station(s, name)
             return s.action_down()
-    if s.blender == "suco" and free:
+    if s.blender and s.blender not in D.BLENDS and free:
         station(s, "liquidificador")
         return s.action_down()
-    if "laranja_cortada" in hand and s.blender is None:
+    if any(k in D.BLENDS for k in hand) and s.blender is None:
         station(s, "liquidificador")
         return s.action_down()
-    if s.blender == "laranja_cortada":
+    if s.blender in D.BLENDS:
         station(s, "liquidificador")
         s.action_down()
         s.blend = 3.5             # segurou B o tempo certo
@@ -122,7 +123,9 @@ def act(s):
     if free:
         for k in pending(s):
             parts = {"xburger": ["ing:carne"], "misto": ["ing:pao", "ing:presunto", "ing:queijo"],
-                     "fritas": ["ing:batata"], "suco": ["ing:laranja"]}[k]
+                     "fritas": ["ing:batata"], "suco": ["ing:laranja"],
+                     "pao_chapa": ["ing:pao", "ing:manteiga"],
+                     "suco_mexerica": ["ing:mexerica"]}[k]
             if all(s.casa.count(p[4:]) > 0 for p in parts):
                 return make(s, parts)
         for t in s.tables:
@@ -132,7 +135,7 @@ def act(s):
 
 
 def restock(casa):
-    for k in D.INGREDIENT_ORDER:
+    for k in casa.shop_keys():
         while casa.count(k) < D.INGREDIENTS[k][2] and casa.money > 40:
             casa.buy(k)
 
@@ -143,9 +146,10 @@ def main():
     p.add_argument("--ritmo", type=float, default=1.5, help="segundos entre ações")
     p.add_argument("--velocidade", default="Normal", choices=[n for n, _ in C.SPEEDS])
     p.add_argument("--semente", type=int, default=1)
+    p.add_argument("--estacao", default="Verão", choices=list(D.SEASONS))
     args = p.parse_args()
     rng = random.Random(args.semente)
-    casa = Casa()
+    casa = Casa(season=D.SEASONS.index(args.estacao))
     for _ in range(args.dias):
         casa.start_day(rng)
         restock(casa)

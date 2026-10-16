@@ -10,8 +10,13 @@ INGREDIENTS = {
     "batata": ("batata", "porções de batata", 8, 8, 10),
     "sal": ("sal", "pitadas de sal", 40, 2, 999),
     "laranja": ("laranja", "laranjas", 8, 6, 5),
+    "manteiga": ("manteiga", "porções de manteiga", 20, 6, 10),
+    "mexerica": ("mexerica", "mexericas", 8, 5, 5),
 }
-INGREDIENT_ORDER = ("pao", "presunto", "queijo", "carne", "batata", "sal", "laranja")
+INGREDIENT_ORDER = ("pao", "presunto", "queijo", "carne", "batata", "sal", "laranja",
+                    "manteiga", "mexerica")
+# Ingredientes que só aparecem nas compras em algumas estações (índices de SEASONS).
+INGREDIENT_SEASONS = {"mexerica": (2,)}
 
 # Estoque do começo do jogo: pacotes de cada ingrediente.
 START_PACKS = {"pao": 1, "presunto": 1, "queijo": 1, "carne": 1, "batata": 1, "sal": 1,
@@ -29,6 +34,10 @@ ITEM_NAMES = {
     "xburger": "X-burger",
     "fritas": "batata frita",
     "suco": "suco de laranja",
+    "pao_manteiga": "pão com manteiga",
+    "pao_chapa": "pão na chapa",
+    "mexerica_descascada": "mexericas descascadas",
+    "suco_mexerica": "suco de mexerica",
     "queimado": "comida queimada",
     "louca": "louça suja",
 }
@@ -40,14 +49,21 @@ RECIPES = {
     "xburger": ("X-burger", 14, ("pao", "carne", "queijo")),
     "fritas": ("Batata frita", 10, ("batata", "sal")),
     "suco": ("Suco de laranja", 6, ("laranja",)),
+    "pao_chapa": ("Pão na chapa", 5, ("pao", "manteiga")),
+    "suco_mexerica": ("Suco de mexerica", 7, ("mexerica",)),
 }
-RECIPE_ORDER = ("misto", "xburger", "fritas", "suco")
+RECIPE_ORDER = ("misto", "xburger", "fritas", "suco", "pao_chapa", "suco_mexerica")
+BASE_RECIPES = ("misto", "xburger", "fritas", "suco")
+# Receitas que a casa aprende quando a estação chega pela primeira vez.
+SEASON_RECIPES = {2: ("pao_chapa", "suco_mexerica")}
 # Como é falado num pedido: (um ou uma, singular, plural).
 ORDER_WORDS = {
     "misto": ("um", "misto quente", "mistos quentes"),
     "xburger": ("um", "X-burger", "X-burgers"),
     "fritas": ("uma", "batata frita", "batatas fritas"),
     "suco": ("um", "suco de laranja", "sucos de laranja"),
+    "pao_chapa": ("um", "pão na chapa", "pães na chapa"),
+    "suco_mexerica": ("um", "suco de mexerica", "sucos de mexerica"),
 }
 
 # Bancada: o que junta vira o quê. As partes podem ser ingredientes do estoque
@@ -59,27 +75,37 @@ ASSEMBLY = (
     (frozenset(("batata",)), "batata_crua"),
     (frozenset(("fritas_sem_sal", "sal")), "fritas"),
     (frozenset(("laranja",)), "laranja_cortada"),
+    (frozenset(("pao", "manteiga")), "pao_manteiga"),
+    (frozenset(("mexerica",)), "mexerica_descascada"),
 )
 
 # Fogo: o que entra cru e sai pronto, e o nome curto usado nas falas.
 COOKED = {"hamburguer_cru": "hamburguer", "misto_montado": "misto",
-          "batata_crua": "fritas_sem_sal"}
+          "batata_crua": "fritas_sem_sal", "pao_manteiga": "pao_chapa"}
 COOK_SHORT = {"hamburguer_cru": "hambúrguer", "misto_montado": "misto",
-              "batata_crua": "batata"}
+              "batata_crua": "batata", "pao_manteiga": "pão"}
 # Precisa virar (chapa) ou sacudir (fritadeira) no meio.
-TURN = {"misto_montado": "virar", "batata_crua": "sacudir"}
-STATION_ACCEPTS = {"chapa": ("hamburguer_cru", "misto_montado"),
+TURN = {"misto_montado": "virar", "batata_crua": "sacudir", "pao_manteiga": "virar"}
+STATION_ACCEPTS = {"chapa": ("hamburguer_cru", "misto_montado", "pao_manteiga"),
                    "fritadeira": ("batata_crua",)}
+
+# Liquidificador: fruta preparada -> (suco, como a fruta é falada).
+BLENDS = {"laranja_cortada": ("suco", "laranjas"),
+          "mexerica_descascada": ("suco_mexerica", "mexericas")}
 
 # --- estações -----------------------------------------------------------------
 SEASONS = ("Primavera", "Verão", "Outono", "Inverno")
 
 # Peso de cada receita nos pedidos, por estação. Acima de 1.4 é "da estação".
 PREFERENCES = (
-    {"misto": 1.0, "xburger": 1.0, "fritas": 1.0, "suco": 1.6},
-    {"misto": 0.6, "xburger": 1.0, "fritas": 1.5, "suco": 2.5},
-    {"misto": 1.6, "xburger": 1.1, "fritas": 1.0, "suco": 0.8},
-    {"misto": 2.0, "xburger": 1.5, "fritas": 1.0, "suco": 0.4},
+    {"misto": 1.0, "xburger": 1.0, "fritas": 1.0, "suco": 1.6, "pao_chapa": 0.8,
+     "suco_mexerica": 1.0},
+    {"misto": 0.6, "xburger": 1.0, "fritas": 1.5, "suco": 2.5, "pao_chapa": 0.4,
+     "suco_mexerica": 1.0},
+    {"misto": 1.5, "xburger": 1.1, "fritas": 0.9, "suco": 0.6, "pao_chapa": 2.0,
+     "suco_mexerica": 2.0},
+    {"misto": 2.0, "xburger": 1.5, "fritas": 1.0, "suco": 0.4, "pao_chapa": 1.6,
+     "suco_mexerica": 0.6},
 )
 IN_SEASON = 1.4
 IN_SEASON_TIP = 1.3
@@ -91,6 +117,24 @@ WEATHER = (
     ("nublado", "céu nublado", 0.95, 1.0, (3, 2, 4, 4)),
     ("chuva", "chuva", 0.7, 1.15, (2, 3, 3, 3)),
     ("frio", "frio", 0.9, 1.0, (0, 0, 1, 4)),
+    ("vento", "vento frio, com folhas voando na calçada", 0.9, 1.05, (1, 0, 4, 1)),
+)
+
+# O que cada estação traz: a fala de chegada, o som de fundo do expediente e
+# as datas especiais {dia: (nome, movimento, chance de pedir dois, gorjeta, fala)}.
+SEASON_INFO = (
+    {"arrival": "Chegou a primavera.", "ambient": None, "special": {}},
+    {"arrival": "Chegou o verão: calor, suco gelado e batata frita.", "ambient": None,
+     "special": {}},
+    {"arrival": "Chegou o outono. O vento esfriou, as folhas caem na calçada e os "
+                "fregueses querem coisa quentinha. A casa aprendeu duas receitas: pão na "
+                "chapa, com pão e manteiga na bancada e virando na chapa, e suco de "
+                "mexerica, a fruta da estação, que só aparece nas compras no outono.",
+     "ambient": "outono",
+     "special": {12: ("Dia das Mães", 1.5, 0.8, 1.5,
+                      "Hoje é Dia das Mães: a casa vai encher de famílias, que pedem mais e "
+                      "deixam gorjetas maiores.")}},
+    {"arrival": "Chegou o inverno.", "ambient": None, "special": {}},
 )
 
 

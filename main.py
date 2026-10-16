@@ -119,11 +119,26 @@ ui = UI()
 
 # --- dia -------------------------------------------------------------------------
 def new_game():
+    """Escolhe a estação do primeiro dia e começa."""
     main_menu.close()
-    state["casa"] = Casa()
+    season_menu.open(index=C.FIRST_SEASON, announce_help=False)
+
+
+def on_season(index, item):
+    season_menu.close()
+    state["casa"] = Casa(season=index)
     write_save()
     game.say("Você pegou as chaves de uma lanchonete pequena, com três mesas, uma chapa, "
              "uma fritadeira e um liquidificador.", on_done=lambda done: begin_day())
+
+
+def close_season():
+    season_menu.close()
+    open_main()
+
+
+season_menu = a11y.Menu(game, "Começar em qual estação?", list(D.SEASONS), on_select=on_season,
+                        on_back=close_season, sounds=menu_sounds)
 
 
 def continue_game():
@@ -142,7 +157,7 @@ def begin_day():
     lines = casa.start_day()
     write_save()
     state["phase"] = "abertura"
-    ui.play("manha")
+    ui.play("festa" if casa.special() else "manha")
     game.say(" ".join(lines), on_done=lambda done: open_opening())
 
 
@@ -181,7 +196,8 @@ def on_opening(index, item):
         game.say(opening_menu.items[index])
         write_save()
     elif item == "Dinheiro e estoque":
-        stock = ["%s %d" % (D.INGREDIENTS[k][0], casa.count(k)) for k in D.INGREDIENT_ORDER]
+        stock = ["%s %d" % (D.INGREDIENTS[k][0], casa.count(k)) for k in D.INGREDIENT_ORDER
+                 if casa.count(k) or casa.can_buy(k)]
         game.say("%s. Reputação: %s. Estoque: %s." % (money(casa.money).capitalize(),
                                                      stars(casa.reputation), ", ".join(stock)))
     elif item == "Resumo de ontem":
@@ -211,7 +227,8 @@ opening_menu = a11y.Menu(game, "Abertura", opening_items(), on_select=on_opening
 
 # compras
 def shop_items():
-    return [state["casa"].stock_text(k) for k in D.INGREDIENT_ORDER] + ["Voltar"]
+    casa = state["casa"]
+    return [casa.stock_text(k) for k in casa.shop_keys()] + ["Voltar"]
 
 
 def on_shop(index, item):
@@ -219,7 +236,7 @@ def on_shop(index, item):
         back_to_opening(shop_menu, "Compras")
         return
     casa = state["casa"]
-    key = D.INGREDIENT_ORDER[index]
+    key = casa.shop_keys()[index]
     if not casa.buy(key):
         ui.play("errado")
         game.say("Não dá: o pacote custa %s e você tem %s." % (money(D.INGREDIENTS[key][3]),
@@ -245,7 +262,7 @@ shop_menu = a11y.Menu(game, "Compras", ["Voltar"], on_select=on_shop,
 def menu_items():
     casa = state["casa"]
     return ["%s: %s" % (D.recipe_name(k), "no cardápio" if casa.menu[k] else "fora do cardápio")
-            for k in D.RECIPE_ORDER] + ["Voltar"]
+            for k in casa.known_recipes()] + ["Voltar"]
 
 
 def on_menu(index, item):
@@ -253,7 +270,7 @@ def on_menu(index, item):
         back_to_opening(menu_menu, "Cardápio")
         return
     casa = state["casa"]
-    key = D.RECIPE_ORDER[index]
+    key = casa.known_recipes()[index]
     if casa.menu[key] and len(casa.active_menu()) == 1:
         game.say("O cardápio precisa de pelo menos uma receita.")
         return
@@ -271,14 +288,14 @@ menu_menu = a11y.Menu(game, "Cardápio", ["Voltar"], on_select=on_menu,
 def price_items():
     casa = state["casa"]
     return ["%s: %s, %s" % (D.recipe_name(k), casa.tier(k)[0].lower(), money(casa.price(k)))
-            for k in D.RECIPE_ORDER] + ["Voltar"]
+            for k in casa.known_recipes()] + ["Voltar"]
 
 
 def on_prices(index, item):
     if item == "Voltar":
         back_to_opening(prices_menu, "Preços")
         return
-    key = D.RECIPE_ORDER[index]
+    key = state["casa"].known_recipes()[index]
     state["pricing"] = key
     prices_menu.close()
     base = D.RECIPES[key][1]
@@ -293,13 +310,14 @@ def on_tier(index, item):
     write_save()
     tier_menu.close()
     prices_menu.items = price_items()
-    prices_menu.open(index=D.RECIPE_ORDER.index(key), announce_help=False)
+    prices_menu.open(index=state["casa"].known_recipes().index(key), announce_help=False)
 
 
 def close_tier():
     tier_menu.close()
     prices_menu.items = price_items()
-    prices_menu.open(index=D.RECIPE_ORDER.index(state["pricing"]), announce_help=False)
+    prices_menu.open(index=state["casa"].known_recipes().index(state["pricing"]),
+                     announce_help=False)
 
 
 prices_menu = a11y.Menu(game, "Preços", ["Voltar"], on_select=on_prices,

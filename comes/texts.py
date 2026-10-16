@@ -27,6 +27,14 @@ HELP = (
      "fritadeira, sacudindo no meio; tire e junte o sal na bancada. Suco de laranja: laranja "
      "na bancada, leve ao liquidificador e segure B até o som ficar liso. Soltar cedo deixa "
      "pedaço; bater demais esquenta o suco."),
+    ("Estações",
+     "Cada estação tem 28 dias, e o que os fregueses pedem muda com ela. Ao começar um jogo "
+     "novo, você escolhe a estação do primeiro dia. No verão sai muito suco de laranja e "
+     "batata frita. No outono o vento esfria, os fregueses querem coisa quentinha e a casa "
+     "aprende duas receitas. Pão na chapa: pão e manteiga na bancada, depois na chapa, virando "
+     "no meio. Suco de mexerica: a mexerica só aparece nas compras no outono; descasque na "
+     "bancada e bata no liquidificador. No dia 12 do outono é Dia das Mães: a casa enche de "
+     "famílias, que pedem mais e deixam gorjetas maiores."),
     ("Fogo",
      "A chapa e a fritadeira chiam enquanto cozinham. Um sininho avisa o ponto, e a fala avisa "
      "quando é hora de virar ou sacudir. Depois do ponto a comida passa, queima e, se ninguém "

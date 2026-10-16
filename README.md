@@ -8,7 +8,8 @@ pontuação nem fim: os dias passam pelas quatro estações, com 28 dias cada.
 
 Este é o **primeiro protótipo**: só a lanchonete, com 3 mesas, chapa,
 fritadeira, liquidificador e 4 receitas (misto quente, X-burger, batata frita
-e suco de laranja), começando no Verão. Ideia completa, decisões e o que fica
+e suco de laranja), e o **Outono** com receitas, fruta e data especial
+próprios. Ao começar um jogo novo, você escolhe a estação do primeiro dia. Ideia completa, decisões e o que fica
 para depois: [docs/design.md](docs/design.md).
 
 Feito em Python com a biblioteca do
@@ -54,6 +55,20 @@ encerram o dia.
 | Batata frita | Batata na bancada; fritadeira; sacudir no meio; tirar; sal na bancada |
 | Suco de laranja | Laranja na bancada; liquidificador; segurar B até o som ficar liso |
 
+## Outono
+
+No primeiro dia do outono a casa aprende duas receitas e ganha um pacote de
+cada ingrediente novo. Os fregueses passam a pedir mais coisa quentinha e
+menos suco de laranja, e o expediente tem vento e folhas ao fundo.
+
+| Receita | Como se faz |
+|---|---|
+| Pão na chapa | Pão e manteiga na bancada; chapa; virar no meio; tirar no ponto |
+| Suco de mexerica | Mexerica na bancada; liquidificador; segurar B. A mexerica só aparece nas compras no outono |
+
+No dia 12 é **Dia das Mães**: a casa enche de famílias, que pedem mais e
+deixam gorjetas maiores.
+
 Depois do ponto a comida passa, queima e pega fogo. O extintor (B na estação
 pegando fogo) apaga, mas deixa sujeira.
 
@@ -79,6 +94,7 @@ expediente recomeça o dia da abertura.
 ```bash
 python3 -m unittest discover -s tests       # testes
 python3 tools/simular.py --dias 7           # equilíbrio com um jogador automático
+python3 tools/simular.py --estacao Outono   # o mesmo, começando no outono
 python3 tools/gerar_sons.py                 # sons provisórios
 ```
 
