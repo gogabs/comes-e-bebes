@@ -59,7 +59,9 @@ def pending(s):
         have.append(D.BLENDS[s.blender][0] if s.blender in D.BLENDS else s.blender)
     chain = {"hamburguer": "xburger", "hamburguer_cru": "xburger", "misto_montado": "misto",
              "fritas_sem_sal": "fritas", "batata_crua": "fritas", "laranja_cortada": "suco",
-             "mexerica_descascada": "suco_mexerica", "pao_manteiga": "pao_chapa"}
+             "mexerica_descascada": "suco_mexerica", "pao_manteiga": "pao_chapa",
+             "queijo_montado": "queijo_quente", "leite_chocolate": "chocolate_quente",
+             "morango_leite": "vitamina_morango"}
     have = [chain.get(k, k) for k in have]
     for k in have:
         if k in want:
@@ -100,7 +102,8 @@ def act(s):
     if "fritas_sem_sal" in hand:
         return make(s, ["mao:%d" % hand.index("fritas_sem_sal"), "ing:sal"])
     for raw, name in (("hamburguer_cru", "chapa"), ("misto_montado", "chapa"),
-                      ("pao_manteiga", "chapa"), ("batata_crua", "fritadeira")):
+                      ("pao_manteiga", "chapa"), ("queijo_montado", "chapa"),
+                      ("batata_crua", "fritadeira")):
         st = s.cookers[name]
         if raw in hand and len(st.slots) < st.cap:
             station(s, name)
@@ -125,7 +128,11 @@ def act(s):
             parts = {"xburger": ["ing:carne"], "misto": ["ing:pao", "ing:presunto", "ing:queijo"],
                      "fritas": ["ing:batata"], "suco": ["ing:laranja"],
                      "pao_chapa": ["ing:pao", "ing:manteiga"],
-                     "suco_mexerica": ["ing:mexerica"]}[k]
+                     "suco_mexerica": ["ing:mexerica"],
+                     "queijo_quente": ["ing:pao", "ing:queijo"],
+                     "chocolate_quente": ["ing:leite", "ing:chocolate"],
+                     "sanduiche_natural": ["ing:pao", "ing:frango", "ing:alface"],
+                     "vitamina_morango": ["ing:morango", "ing:leite"]}[k]
             if all(s.casa.count(p[4:]) > 0 for p in parts):
                 return make(s, parts)
         for t in s.tables:

@@ -261,6 +261,30 @@ O que muda com a estação:
   pedem dois itens e gorjeta 50% maior.
 - Jogo novo escolhe a estação do primeiro dia.
 
+### Inverno (feito)
+
+- **Receitas novas:** queijo quente (pão e queijo na bancada, chapa, virar
+  no meio) e chocolate quente (leite e chocolate na bancada, batido no
+  liquidificador; batido demais, espuma). Ingredientes novos: leite e
+  chocolate, que não são da estação e ficam nas compras depois.
+- **Gostos:** chocolate quente e queijo quente no topo, misto e pão na chapa
+  em alta, sucos quase parados.
+- **Som de fundo:** garoa no toldo e vento baixo.
+- **Dia de São João** (dia 3): 40% mais movimento e gorjeta 30% maior.
+  Pamonha e quentão ficaram para quando houver fogão e panela.
+
+### Primavera (feito)
+
+- **Receitas novas:** sanduíche natural (pão, frango desfiado e alface na
+  bancada, sem fogo) e vitamina de morango (morango e leite na bancada,
+  batida no liquidificador).
+- **Morango só nas compras na primavera**, como a mexerica no outono.
+- **Gostos:** sanduíche natural e vitamina no topo, suco de laranja em alta,
+  coisa quente em baixa.
+- **Som de fundo:** brisa e passarinhos.
+- **Dia das Crianças** (dia 21): 50% mais movimento e gorjeta 30% maior.
+- O fornecedor dá um pacote só dos ingredientes que a casa ainda não tem.
+
 ## 11. Primeiro protótipo
 
 Só a lanchonete, para testar se o ritmo é gostoso:

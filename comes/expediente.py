@@ -116,6 +116,7 @@ class Service:
         self.blend = 0.0
         self.blending = False
         self.juice_quality = 1.0
+        self.overdone = ""
         self.hands = []
         self.bench = []                   # partes escolhidas na bancada
         self.busy = 0.0                   # apagando fogo
@@ -537,7 +538,7 @@ class Service:
         if self.blender is None:
             item = next((i for i in self.hands if i.kind in D.BLENDS), None)
             if item is None:
-                self.ui.say("Liquidificador vazio. Prepare a fruta na bancada.")
+                self.ui.say("Liquidificador vazio. Prepare a fruta ou o leite na bancada.")
                 return
             self.hands.remove(item)
             self.blender = item.kind
@@ -559,6 +560,7 @@ class Service:
         if self.blend < C.BLEND_MIN:
             self.ui.say("Ainda tem pedaço. Segure mais um pouco.")
             return
+        self.overdone = D.BLENDS[self.blender][2]
         self.blender = D.BLENDS[self.blender][0]
         self.juice_quality = 1.0 if self.blend <= C.BLEND_MAX else C.WARM_JUICE_QUALITY
         self._take_juice()
@@ -566,16 +568,17 @@ class Service:
     def _take_juice(self):
         spot = self._spot(COZINHA, STATIONS.index("liquidificador"))
         name = D.item_name(self.blender).capitalize()
-        warm = ", mas esquentou um pouco" if self.juice_quality < 1.0 else ""
+        warm = ", mas %s" % self.overdone if self.juice_quality < 1.0 else ""
+        end = "a" if D.ORDER_WORDS.get(self.blender, ("um",))[0] == "uma" else "o"
         if len(self.hands) >= C.HANDS:
-            self.ui.say("%s pronto%s. Suas mãos estão cheias: ele espera no liquidificador."
-                        % (name, warm))
+            self.ui.say("%s pront%s%s. Suas mãos estão cheias: %s espera no liquidificador."
+                        % (name, end, warm, "ela" if end == "a" else "ele"))
             return
         self.hands.append(Item(self.blender, quality=self.juice_quality))
         self.blender = None
         self.blend = 0.0
         self.ui.play("servir_copo", spot)
-        self.ui.say("%s pronto%s. Na mão." % (name, warm))
+        self.ui.say("%s pront%s%s. Na mão." % (name, end, warm))
 
     def _blend_pitch(self):
         return 0.8 + 0.5 * min(1.0, self.blend / C.BLEND_MAX)

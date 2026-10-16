@@ -29,12 +29,23 @@ HELP = (
      "pedaço; bater demais esquenta o suco."),
     ("Estações",
      "Cada estação tem 28 dias, e o que os fregueses pedem muda com ela. Ao começar um jogo "
-     "novo, você escolhe a estação do primeiro dia. No verão sai muito suco de laranja e "
-     "batata frita. No outono o vento esfria, os fregueses querem coisa quentinha e a casa "
-     "aprende duas receitas. Pão na chapa: pão e manteiga na bancada, depois na chapa, virando "
-     "no meio. Suco de mexerica: a mexerica só aparece nas compras no outono; descasque na "
-     "bancada e bata no liquidificador. No dia 12 do outono é Dia das Mães: a casa enche de "
-     "famílias, que pedem mais e deixam gorjetas maiores."),
+     "novo, você escolhe a estação do primeiro dia. Quando uma estação chega pela primeira "
+     "vez, a casa aprende duas receitas, que ficam para sempre, e o fornecedor dá um pacote "
+     "dos ingredientes novos. "
+     "Primavera: passarinhos na rua e vontade de coisa fresca. Sanduíche natural: pão, frango "
+     "desfiado e alface na bancada, e já sai pronto. Vitamina de morango: morango e leite na "
+     "bancada, depois bata no liquidificador. O morango só aparece nas compras na primavera. "
+     "No dia 21 é Dia das Crianças. "
+     "Verão: sai muito suco de laranja e batata frita. "
+     "Outono: o vento esfria e os fregueses querem coisa quentinha. Pão na chapa: pão e "
+     "manteiga na bancada, depois na chapa, virando no meio. Suco de mexerica: a mexerica só "
+     "aparece nas compras no outono; descasque na bancada e bata no liquidificador. No dia 12 "
+     "é Dia das Mães. "
+     "Inverno: garoa no toldo e vontade de coisa bem quente. Queijo quente: pão e queijo na "
+     "bancada, depois na chapa, virando no meio. Chocolate quente: leite e chocolate na "
+     "bancada, depois bata no liquidificador; batido demais, espuma. No dia 3 é Dia de São "
+     "João. "
+     "Nas datas especiais a casa enche, os fregueses pedem mais e deixam gorjetas maiores."),
     ("Fogo",
      "A chapa e a fritadeira chiam enquanto cozinham. Um sininho avisa o ponto, e a fala avisa "
      "quando é hora de virar ou sacudir. Depois do ponto a comida passa, queima e, se ninguém "

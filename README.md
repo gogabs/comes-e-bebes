@@ -8,8 +8,8 @@ pontuação nem fim: os dias passam pelas quatro estações, com 28 dias cada.
 
 Este é o **primeiro protótipo**: só a lanchonete, com 3 mesas, chapa,
 fritadeira, liquidificador e 4 receitas (misto quente, X-burger, batata frita
-e suco de laranja), e o **Outono** com receitas, fruta e data especial
-próprios. Ao começar um jogo novo, você escolhe a estação do primeiro dia. Ideia completa, decisões e o que fica
+e suco de laranja) no verão. A **Primavera**, o **Outono** e o **Inverno** têm
+receitas, ingredientes, som de fundo e data especial próprios. Ao começar um jogo novo, você escolhe a estação do primeiro dia. Ideia completa, decisões e o que fica
 para depois: [docs/design.md](docs/design.md).
 
 Feito em Python com a biblioteca do
@@ -69,6 +69,33 @@ menos suco de laranja, e o expediente tem vento e folhas ao fundo.
 No dia 12 é **Dia das Mães**: a casa enche de famílias, que pedem mais e
 deixam gorjetas maiores.
 
+## Inverno
+
+No primeiro dia do inverno a casa aprende mais duas receitas. Os fregueses
+querem coisa bem quente, quase ninguém pede suco, e o expediente tem garoa no
+toldo e vento baixo ao fundo.
+
+| Receita | Como se faz |
+|---|---|
+| Queijo quente | Pão e queijo na bancada; chapa; virar no meio; tirar no ponto |
+| Chocolate quente | Leite e chocolate na bancada; liquidificador; segurar B. Batido demais, espuma |
+
+No dia 3 é **Dia de São João**: tem quadrilha na praça e o povo passa na
+casa para se esquentar.
+
+## Primavera
+
+Na primavera a casa aprende as últimas duas receitas. Os fregueses querem
+coisa fresca, e o expediente tem passarinhos ao fundo.
+
+| Receita | Como se faz |
+|---|---|
+| Sanduíche natural | Pão, frango desfiado e alface na bancada; já sai pronto |
+| Vitamina de morango | Morango e leite na bancada; liquidificador; segurar B. O morango só aparece nas compras na primavera |
+
+No dia 21 é **Dia das Crianças**: famílias com a criançada, que pedem mais e
+deixam gorjetas maiores.
+
 Depois do ponto a comida passa, queima e pega fogo. O extintor (B na estação
 pegando fogo) apaga, mas deixa sujeira.
 
@@ -94,7 +121,7 @@ expediente recomeça o dia da abertura.
 ```bash
 python3 -m unittest discover -s tests       # testes
 python3 tools/simular.py --dias 7           # equilíbrio com um jogador automático
-python3 tools/simular.py --estacao Outono   # o mesmo, começando no outono
+python3 tools/simular.py --estacao Inverno  # o mesmo, começando no inverno
 python3 tools/gerar_sons.py                 # sons provisórios
 ```
 

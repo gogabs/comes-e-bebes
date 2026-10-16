@@ -41,6 +41,7 @@ COOK = {
     "misto_montado": (12.0, 7.0, 8.0, 10.0),
     "batata_crua": (16.0, 7.0, 8.0, 10.0),
     "pao_manteiga": (8.0, 6.0, 7.0, 10.0),
+    "queijo_montado": (10.0, 7.0, 8.0, 10.0),
 }
 CHAPA_SLOTS = 2
 FRITADEIRA_SLOTS = 1

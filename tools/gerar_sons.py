@@ -234,6 +234,20 @@ def main():
                         offsets=[0, 0.12, 0.22, 0.35]), 0.45)
     write("festa", mix(*[tone(f, 0.4, 3, 0.2) for f in (523, 659, 784, 659, 784, 1047)],
                        offsets=[0, 0.12, 0.24, 0.36, 0.48, 0.6]), 0.55)
+    # inverno: garoa no toldo e um vento baixo
+    def slow(x):
+        return 0.5 + 0.3 * math.sin(2 * math.pi * x) ** 2
+    write("inverno", crossfade_loop(mix(pops(6.0, 420, 0.25, 0.006), noise(6.0, 0.985, shape=slow),
+                                        gains=[0.5, 1.0])), 0.55, loop=True)
+    # primavera: brisa leve e passarinhos
+    chirps, offsets, gains = [noise(6.0, 0.97, shape=lambda x: 0.5)], [0.0], [0.6]
+    for start in (0.3, 1.4, 2.2, 3.5, 4.6, 5.2):
+        f = rng.uniform(2600, 3600)
+        for k in range(rng.randint(2, 4)):
+            chirps.append(sweep(f, f * rng.uniform(1.15, 1.4), 0.07, 2, 0.04))
+            offsets.append(start + k * 0.11)
+            gains.append(rng.uniform(0.15, 0.3))
+    write("primavera", crossfade_loop(mix(*chirps, offsets=offsets, gains=gains)), 0.5, loop=True)
     print("sons gerados em %s" % os.path.normpath(OUT))
 
 

@@ -198,8 +198,11 @@ class Casa:
                             self._add_lot(ing)
                             gifts.append(D.INGREDIENTS[ing][0])
             if gifts:
-                lines.append("De presente do fornecedor, para começar: um pacote de %s."
-                             % " e um de ".join(gifts))
+                gifts = ["um de %s" % g for g in gifts]
+                gifts[0] = "um pacote de" + gifts[0][5:]
+                text = gifts[0] if len(gifts) == 1 else "%s e %s" % (", ".join(gifts[:-1]),
+                                                                     gifts[-1])
+                lines.append("De presente do fornecedor, para começar: %s." % text)
         special = self.special()
         if special:
             lines.append(special[4])
