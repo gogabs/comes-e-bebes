@@ -1,0 +1,11 @@
+{
+  "id": "comes-e-bebes",
+  "name": "Comes e Bebes",
+  "description": "Toque uma lanchonete no seu ritmo: atenda, cozinhe sem queimar e limpe tudo no fim do dia.",
+  "version": "0.1.0",
+  "contract": 1,
+  "runtime": "python3",
+  "exec": "main.py",
+  "languages": ["pt-BR"],
+  "author": "Gabs"
+}
