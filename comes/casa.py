@@ -41,6 +41,7 @@ class Casa:
             for _ in range(packs):
                 self._add_lot(k)
         self.learned = list(D.BASE_RECIPES)
+        self.equipment = []
         self.menu = {k: k in self.learned for k in D.RECIPE_ORDER}
         self.prices = {k: C.DEFAULT_TIER for k in D.RECIPE_ORDER}
         self.dirt = {k: 0 for k in DIRT_KEYS}
@@ -125,6 +126,26 @@ class Casa:
             soon = min(d for _, d in lots)
             text += ", estraga em %d %s" % (soon, "dia" if soon == 1 else "dias")
         return text + ". Pacote com %d %s por %s" % (size, plural, money(price))
+
+    # --- lojinha -------------------------------------------------------
+    def buy_equipment(self, key):
+        """Compra um equipamento. Devolve a fala, ou None se não deu."""
+        name, price, _, recipes, gift = D.EQUIPMENT[key]
+        if key in self.equipment or self.money < price:
+            return None
+        self.money -= price
+        self.spent_today += price
+        self.equipment.append(key)
+        for k in recipes:
+            if k not in self.learned:
+                self.learned.append(k)
+                self.menu[k] = True
+        text = "Comprou a %s. %s entrou no cardápio." % (
+            name.lower(), " e ".join(D.recipe_name(k) for k in recipes))
+        if gift and self.count(gift) == 0:
+            self._add_lot(gift)
+            text += " De presente da loja: um pacote de %s." % D.INGREDIENTS[gift][0]
+        return text
 
     # --- preços ----------------------------------------------------------
     def price(self, recipe):
@@ -299,6 +320,7 @@ class Casa:
         if data.get("versao") != cls.SAVE_VERSION:
             raise ValueError("versão de save desconhecida")
         casa = cls()
+        new_recipes = [k for k in D.RECIPE_ORDER if k not in data.get("menu", {})]
         for key, value in data.items():
             if key != "versao" and key in casa.__dict__:
                 setattr(casa, key, copy.deepcopy(value))
@@ -313,6 +335,12 @@ class Casa:
         if "learned" not in data:
             casa.learned = list(D.BASE_RECIPES) + [k for k in D.RECIPE_ORDER
                                                    if k not in D.BASE_RECIPES and casa.menu[k]]
+        # Receitas básicas que chegaram numa versão nova entram no cardápio.
+        for k in D.BASE_RECIPES:
+            if k not in casa.learned:
+                casa.learned.append(k)
+                if k in new_recipes:
+                    casa.menu[k] = True
         if casa.checkpoint is None:
             casa.save_checkpoint()
         return casa

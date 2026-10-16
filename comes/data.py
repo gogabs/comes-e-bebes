@@ -17,15 +17,19 @@ INGREDIENTS = {
     "frango": ("frango desfiado", "porções de frango desfiado", 8, 12, 3),
     "alface": ("alface", "folhas de alface", 12, 4, 3),
     "morango": ("morango", "porções de morango", 8, 8, 4),
+    "massa": ("massa de pastel", "discos de massa", 10, 6, 5),
+    "coxinha": ("coxinha congelada", "coxinhas congeladas", 10, 12, 20),
+    "cafe": ("café em grão", "doses de café", 20, 10, 30),
 }
 INGREDIENT_ORDER = ("pao", "presunto", "queijo", "carne", "batata", "sal", "laranja",
-                    "manteiga", "mexerica", "leite", "chocolate", "frango", "alface", "morango")
+                    "manteiga", "mexerica", "leite", "chocolate", "frango", "alface", "morango",
+                    "massa", "coxinha", "cafe")
 # Ingredientes que só aparecem nas compras em algumas estações (índices de SEASONS).
 INGREDIENT_SEASONS = {"mexerica": (2,), "morango": (0,)}
 
 # Estoque do começo do jogo: pacotes de cada ingrediente.
 START_PACKS = {"pao": 1, "presunto": 1, "queijo": 1, "carne": 1, "batata": 1, "sal": 1,
-               "laranja": 1}
+               "laranja": 1, "massa": 1, "coxinha": 1}
 
 # --- o que vai nas mãos -------------------------------------------------------
 ITEM_NAMES = {
@@ -50,6 +54,11 @@ ITEM_NAMES = {
     "sanduiche_natural": "sanduíche natural",
     "morango_leite": "morango com leite",
     "vitamina_morango": "vitamina de morango",
+    "pastel_cru": "pastel cru",
+    "pastel": "pastel de queijo",
+    "coxinha_crua": "coxinha para fritar",
+    "coxinha": "coxinha",
+    "cafezinho": "cafezinho",
     "queimado": "comida queimada",
     "louca": "louça suja",
 }
@@ -60,6 +69,8 @@ RECIPES = {
     "misto": ("Misto quente", 8, ("pao", "presunto", "queijo")),
     "xburger": ("X-burger", 14, ("pao", "carne", "queijo")),
     "fritas": ("Batata frita", 10, ("batata", "sal")),
+    "pastel": ("Pastel de queijo", 9, ("massa", "queijo")),
+    "coxinha": ("Coxinha", 6, ("coxinha",)),
     "suco": ("Suco de laranja", 6, ("laranja",)),
     "pao_chapa": ("Pão na chapa", 5, ("pao", "manteiga")),
     "suco_mexerica": ("Suco de mexerica", 7, ("mexerica",)),
@@ -67,10 +78,12 @@ RECIPES = {
     "chocolate_quente": ("Chocolate quente", 8, ("leite", "chocolate")),
     "sanduiche_natural": ("Sanduíche natural", 12, ("pao", "frango", "alface")),
     "vitamina_morango": ("Vitamina de morango", 9, ("morango", "leite")),
+    "cafezinho": ("Cafezinho", 4, ("cafe",)),
 }
-RECIPE_ORDER = ("misto", "xburger", "fritas", "suco", "pao_chapa", "suco_mexerica",
-                "queijo_quente", "chocolate_quente", "sanduiche_natural", "vitamina_morango")
-BASE_RECIPES = ("misto", "xburger", "fritas", "suco")
+RECIPE_ORDER = ("misto", "xburger", "fritas", "pastel", "coxinha", "suco", "pao_chapa",
+                "suco_mexerica", "queijo_quente", "chocolate_quente", "sanduiche_natural",
+                "vitamina_morango", "cafezinho")
+BASE_RECIPES = ("misto", "xburger", "fritas", "pastel", "coxinha", "suco")
 # Receitas que a casa aprende quando a estação chega pela primeira vez.
 SEASON_RECIPES = {0: ("sanduiche_natural", "vitamina_morango"),
                   2: ("pao_chapa", "suco_mexerica"),
@@ -80,6 +93,9 @@ ORDER_WORDS = {
     "misto": ("um", "misto quente", "mistos quentes"),
     "xburger": ("um", "X-burger", "X-burgers"),
     "fritas": ("uma", "batata frita", "batatas fritas"),
+    "pastel": ("um", "pastel de queijo", "pastéis de queijo"),
+    "coxinha": ("uma", "coxinha", "coxinhas"),
+    "cafezinho": ("um", "cafezinho", "cafezinhos"),
     "suco": ("um", "suco de laranja", "sucos de laranja"),
     "pao_chapa": ("um", "pão na chapa", "pães na chapa"),
     "suco_mexerica": ("um", "suco de mexerica", "sucos de mexerica"),
@@ -104,20 +120,24 @@ ASSEMBLY = (
     (frozenset(("leite", "chocolate")), "leite_chocolate"),
     (frozenset(("pao", "frango", "alface")), "sanduiche_natural"),
     (frozenset(("morango", "leite")), "morango_leite"),
+    (frozenset(("massa", "queijo")), "pastel_cru"),
+    (frozenset(("coxinha",)), "coxinha_crua"),
 )
 
 # Fogo: o que entra cru e sai pronto, e o nome curto usado nas falas.
 COOKED = {"hamburguer_cru": "hamburguer", "misto_montado": "misto",
           "batata_crua": "fritas_sem_sal", "pao_manteiga": "pao_chapa",
-          "queijo_montado": "queijo_quente"}
+          "queijo_montado": "queijo_quente", "pastel_cru": "pastel",
+          "coxinha_crua": "coxinha"}
 COOK_SHORT = {"hamburguer_cru": "hambúrguer", "misto_montado": "misto",
-              "batata_crua": "batata", "pao_manteiga": "pão", "queijo_montado": "queijo quente"}
+              "batata_crua": "batata", "pao_manteiga": "pão", "queijo_montado": "queijo quente",
+              "pastel_cru": "pastel", "coxinha_crua": "coxinha"}
 # Precisa virar (chapa) ou sacudir (fritadeira) no meio.
 TURN = {"misto_montado": "virar", "batata_crua": "sacudir", "pao_manteiga": "virar",
-        "queijo_montado": "virar"}
+        "queijo_montado": "virar", "pastel_cru": "virar"}
 STATION_ACCEPTS = {"chapa": ("hamburguer_cru", "misto_montado", "pao_manteiga",
                              "queijo_montado"),
-                   "fritadeira": ("batata_crua",)}
+                   "fritadeira": ("batata_crua", "pastel_cru", "coxinha_crua")}
 
 # Liquidificador: o que foi preparado na bancada -> (bebida, como é falado,
 # o que acontece quando bate demais).
@@ -126,6 +146,17 @@ BLENDS = {"laranja_cortada": ("suco", "laranjas", "esquentou um pouco"),
           "leite_chocolate": ("chocolate_quente", "leite com chocolate", "espumou demais"),
           "morango_leite": ("vitamina_morango", "morango com leite", "esquentou um pouco")}
 
+# --- lojinha -----------------------------------------------------------------
+# Equipamentos que a casa compra na abertura:
+# chave: (nome, preço, descrição falada, receitas que libera, ingrediente de presente).
+EQUIPMENT = {
+    "cafeteira": ("Cafeteira", 250,
+                  "Mói o grão e passa o cafezinho na hora. Fica no fim da cozinha, depois da "
+                  "lixeira, e põe o cafezinho no cardápio.",
+                  ("cafezinho",), "cafe"),
+}
+EQUIPMENT_ORDER = ("cafeteira",)
+
 # --- estações -----------------------------------------------------------------
 SEASONS = ("Primavera", "Verão", "Outono", "Inverno")
 
@@ -133,16 +164,20 @@ SEASONS = ("Primavera", "Verão", "Outono", "Inverno")
 PREFERENCES = (
     {"misto": 1.0, "xburger": 1.0, "fritas": 1.0, "suco": 1.6, "pao_chapa": 0.8,
      "suco_mexerica": 0.8, "queijo_quente": 0.8, "chocolate_quente": 0.6,
-     "sanduiche_natural": 2.0, "vitamina_morango": 2.0},
+     "sanduiche_natural": 2.0, "vitamina_morango": 2.0,
+     "pastel": 1.2, "coxinha": 1.0, "cafezinho": 1.0},
     {"misto": 0.6, "xburger": 1.0, "fritas": 1.5, "suco": 2.5, "pao_chapa": 0.4,
      "suco_mexerica": 1.0, "queijo_quente": 0.5, "chocolate_quente": 0.2,
-     "sanduiche_natural": 1.3, "vitamina_morango": 1.3},
+     "sanduiche_natural": 1.3, "vitamina_morango": 1.3,
+     "pastel": 1.1, "coxinha": 0.9, "cafezinho": 0.6},
     {"misto": 1.5, "xburger": 1.1, "fritas": 0.9, "suco": 0.6, "pao_chapa": 2.0,
      "suco_mexerica": 2.0, "queijo_quente": 1.5, "chocolate_quente": 1.3,
-     "sanduiche_natural": 0.8, "vitamina_morango": 0.8},
+     "sanduiche_natural": 0.8, "vitamina_morango": 0.8,
+     "pastel": 1.0, "coxinha": 1.2, "cafezinho": 1.6},
     {"misto": 2.0, "xburger": 1.5, "fritas": 1.0, "suco": 0.4, "pao_chapa": 1.6,
      "suco_mexerica": 0.6, "queijo_quente": 2.0, "chocolate_quente": 2.5,
-     "sanduiche_natural": 0.5, "vitamina_morango": 0.4},
+     "sanduiche_natural": 0.5, "vitamina_morango": 0.4,
+     "pastel": 1.0, "coxinha": 1.3, "cafezinho": 2.2},
 )
 IN_SEASON = 1.4
 IN_SEASON_TIP = 1.3

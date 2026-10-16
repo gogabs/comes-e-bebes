@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from comes import config as C  # noqa: E402
 from comes import data as D  # noqa: E402
 from comes.casa import Casa  # noqa: E402
-from comes.expediente import COZINHA, SALAO, STATIONS, Service  # noqa: E402
+from comes.expediente import COZINHA, SALAO, Service  # noqa: E402
 
 
 class Quiet:
@@ -34,7 +34,7 @@ def at(s, layer, index):
 
 
 def station(s, name):
-    at(s, COZINHA, STATIONS.index(name))
+    at(s, COZINHA, s.layout[COZINHA].index(name))
 
 
 def kinds(s):
@@ -55,13 +55,16 @@ def pending(s):
     have = kinds(s)
     for st in s.cookers.values():
         have += [D.COOKED[c.kind] for c in st.slots]
+    if s.coffee:
+        have.append("cafezinho")
     if s.blender:
         have.append(D.BLENDS[s.blender][0] if s.blender in D.BLENDS else s.blender)
     chain = {"hamburguer": "xburger", "hamburguer_cru": "xburger", "misto_montado": "misto",
              "fritas_sem_sal": "fritas", "batata_crua": "fritas", "laranja_cortada": "suco",
              "mexerica_descascada": "suco_mexerica", "pao_manteiga": "pao_chapa",
              "queijo_montado": "queijo_quente", "leite_chocolate": "chocolate_quente",
-             "morango_leite": "vitamina_morango"}
+             "morango_leite": "vitamina_morango", "pastel_cru": "pastel",
+             "coxinha_crua": "coxinha"}
     have = [chain.get(k, k) for k in have]
     for k in have:
         if k in want:
@@ -103,11 +106,20 @@ def act(s):
         return make(s, ["mao:%d" % hand.index("fritas_sem_sal"), "ing:sal"])
     for raw, name in (("hamburguer_cru", "chapa"), ("misto_montado", "chapa"),
                       ("pao_manteiga", "chapa"), ("queijo_montado", "chapa"),
-                      ("batata_crua", "fritadeira")):
+                      ("batata_crua", "fritadeira"), ("pastel_cru", "fritadeira"),
+                      ("coxinha_crua", "fritadeira")):
         st = s.cookers[name]
         if raw in hand and len(st.slots) < st.cap:
             station(s, name)
             return s.action_down()
+    if s.coffee == "pronto" and free:
+        station(s, "cafeteira")
+        return s.action_down()
+    if s.coffee == "graos":
+        station(s, "cafeteira")
+        s.action_down()
+        s.grind = 3.0             # segurou B o tempo certo
+        return s.action_up()
     if s.blender and s.blender not in D.BLENDS and free:
         station(s, "liquidificador")
         return s.action_down()
@@ -125,6 +137,11 @@ def act(s):
             return s.action_down()
     if free:
         for k in pending(s):
+            if k == "cafezinho":
+                if s.coffee is None and s.casa.count("cafe"):
+                    station(s, "cafeteira")
+                    return s.action_down()
+                continue
             parts = {"xburger": ["ing:carne"], "misto": ["ing:pao", "ing:presunto", "ing:queijo"],
                      "fritas": ["ing:batata"], "suco": ["ing:laranja"],
                      "pao_chapa": ["ing:pao", "ing:manteiga"],
@@ -132,7 +149,9 @@ def act(s):
                      "queijo_quente": ["ing:pao", "ing:queijo"],
                      "chocolate_quente": ["ing:leite", "ing:chocolate"],
                      "sanduiche_natural": ["ing:pao", "ing:frango", "ing:alface"],
-                     "vitamina_morango": ["ing:morango", "ing:leite"]}[k]
+                     "vitamina_morango": ["ing:morango", "ing:leite"],
+                     "pastel": ["ing:massa", "ing:queijo"],
+                     "coxinha": ["ing:coxinha"]}[k]
             if all(s.casa.count(p[4:]) > 0 for p in parts):
                 return make(s, parts)
         for t in s.tables:
@@ -142,6 +161,9 @@ def act(s):
 
 
 def restock(casa):
+    for k in D.EQUIPMENT_ORDER:
+        if k not in casa.equipment and casa.money >= D.EQUIPMENT[k][1] + 150:
+            casa.buy_equipment(k)
     for k in casa.shop_keys():
         while casa.count(k) < D.INGREDIENTS[k][2] and casa.money > 40:
             casa.buy(k)

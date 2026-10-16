@@ -69,6 +69,26 @@ menos suco de laranja, e o expediente tem vento e folhas ao fundo.
 No dia 12 é **Dia das Mães**: a casa enche de famílias, que pedem mais e
 deixam gorjetas maiores.
 
+## Pastel, coxinha e a lojinha
+
+O pastel de queijo (massa e queijo na bancada, fritadeira, virar no meio) e
+a coxinha (bancada e fritadeira) vêm desde o primeiro dia, e a fritadeira
+leva duas coisas de cada vez.
+
+Na abertura, a **Lojinha** vende equipamentos. O primeiro é a **cafeteira**
+(250 reais): ela entra no fim da cozinha, depois da lixeira, e põe o
+cafezinho no cardápio. B põe o grão, segurar B mói, e soltar passa o café.
+Moer pouco deixa o pó grosso, moer demais amarga, e o café pronto esfria se
+ficar esperando. No inverno é o que mais sai.
+
+## Lavar e raspar girando
+
+Na limpeza, a pia e o fogo se limpam girando o analógico esquerdo em
+círculos. A esponja chia acompanhando a mão, e o prato range quando fica
+limpo. Copo e prato saem com uma volta e prato de fritura com duas, e o
+próximo vem sozinho para a mão. Quem preferir gira com o direcional (cima,
+direita, baixo, esquerda). A para.
+
 ## Inverno
 
 No primeiro dia do inverno a casa aprende mais duas receitas. Os fregueses

@@ -18,7 +18,11 @@ from .casa import money
 SALAO, COZINHA = 0, 1
 STATIONS = ("bancada", "chapa", "fritadeira", "liquidificador", "pia", "lixeira")
 STATION_NAMES = {"bancada": "Bancada", "chapa": "Chapa", "fritadeira": "Fritadeira",
-                 "liquidificador": "Liquidificador", "pia": "Pia", "lixeira": "Lixeira"}
+                 "liquidificador": "Liquidificador", "pia": "Pia", "lixeira": "Lixeira",
+                 "cafeteira": "Cafeteira"}
+# Equipamentos comprados na lojinha entram no fim da cozinha.
+EXTRA_STATIONS = ("cafeteira",)
+FEMININE = ("batata", "coxinha")
 COOKERS = ("chapa", "fritadeira")
 STAGE_WORDS = ("cozinhando", "no ponto", "passando do ponto", "queimado")
 TURN_WORDS = {"virar": ("virar", "Virou"), "sacudir": ("sacudir", "Sacudiu")}
@@ -106,7 +110,8 @@ class Service:
         self.sf = speed
         self.on_done = on_done            # on_done(resumo): todos foram embora
         self.on_closed = on_closed        # on_closed(): a vigilância interditou a casa
-        self.layout = (["mesa"] * C.TABLES, list(STATIONS))
+        self.layout = (["mesa"] * C.TABLES,
+                       list(STATIONS) + [k for k in EXTRA_STATIONS if k in casa.equipment])
         self.layer = SALAO
         self.index = [C.TABLES // 2, 0]
         self.tables = [Table(i) for i in range(C.TABLES)]
@@ -117,6 +122,11 @@ class Service:
         self.blending = False
         self.juice_quality = 1.0
         self.overdone = ""
+        self.coffee = None                # None, "graos", "passando" ou "pronto"
+        self.grind = 0.0
+        self.grinding = False
+        self.coffee_t = 0.0
+        self.coffee_quality = 1.0
         self.hands = []
         self.bench = []                   # partes escolhidas na bancada
         self.busy = 0.0                   # apagando fogo
@@ -173,6 +183,7 @@ class Service:
         for station in self.cookers.values():
             self._update_station(station, dt)
         self._update_blender(dt)
+        self._update_coffee(dt)
         if self.inspect_at is not None and self.t >= self.inspect_at:
             self.inspect_at = None
             self._inspection()
@@ -391,7 +402,7 @@ class Service:
         return [v * self.sf for v in C.COOK[kind]]
 
     def _update_station(self, station, dt):
-        spot = self._spot(COZINHA, STATIONS.index(station.name))
+        spot = self._spot(COZINHA, self._at(station.name))
         name = STATION_NAMES[station.name].lower()
         if station.fire:
             station.fire_t += dt
@@ -428,10 +439,10 @@ class Service:
         self._station_loop(station)
 
     def _the(self, short):
-        return ("a " if short == "batata" else "o ") + short
+        return ("a " if short in FEMININE else "o ") + short
 
     def _station_loop(self, station):
-        spot = self._spot(COZINHA, STATIONS.index(station.name))
+        spot = self._spot(COZINHA, self._at(station.name))
         if station.fire:
             self.ui.loop(station.name, "fogo", spot)
         elif station.slots:
@@ -447,7 +458,7 @@ class Service:
         station.slots = []
         self.stats["fires"] += 1
         self._rep(C.REP_FIRE)
-        spot = self._spot(COZINHA, STATIONS.index(station.name))
+        spot = self._spot(COZINHA, self._at(station.name))
         self.ui.play("alarme", spot)
         name = STATION_NAMES[station.name].lower()
         self.ui.say(("O fogo passou para a %s!" if spread else "Fogo na %s!") % name
@@ -470,7 +481,7 @@ class Service:
                     % STATION_NAMES[station.name].lower())
 
     def _cooker_action(self, station):
-        spot = self._spot(COZINHA, STATIONS.index(station.name))
+        spot = self._spot(COZINHA, self._at(station.name))
         name = STATION_NAMES[station.name].lower()
         if station.fire:
             self.busy = C.EXTINGUISH_TIME
@@ -534,7 +545,7 @@ class Service:
 
     # --- liquidificador --------------------------------------------------
     def _blender_down(self):
-        spot = self._spot(COZINHA, STATIONS.index("liquidificador"))
+        spot = self._spot(COZINHA, self._at("liquidificador"))
         if self.blender is None:
             item = next((i for i in self.hands if i.kind in D.BLENDS), None)
             if item is None:
@@ -566,7 +577,7 @@ class Service:
         self._take_juice()
 
     def _take_juice(self):
-        spot = self._spot(COZINHA, STATIONS.index("liquidificador"))
+        spot = self._spot(COZINHA, self._at("liquidificador"))
         name = D.item_name(self.blender).capitalize()
         warm = ", mas %s" % self.overdone if self.juice_quality < 1.0 else ""
         end = "a" if D.ORDER_WORDS.get(self.blender, ("um",))[0] == "uma" else "o"
@@ -588,12 +599,97 @@ class Service:
             return
         before = self.blend
         self.blend += dt
-        spot = self._spot(COZINHA, STATIONS.index("liquidificador"))
+        spot = self._spot(COZINHA, self._at("liquidificador"))
         self.ui.loop("liquidificador", "liquidificador", spot, pitch=self._blend_pitch())
         if before < C.BLEND_MIN <= self.blend:
             self.ui.play("liso", spot)
         if before < C.BLEND_MAX <= self.blend:
             self.ui.play("passando", spot)
+
+    # --- cafeteira -------------------------------------------------------
+    def _coffee_down(self):
+        spot = self._spot(COZINHA, self._at("cafeteira"))
+        if self.coffee is None:
+            if not self.casa.take("cafe"):
+                self.ui.say("Acabou o café em grão. Compre na abertura.")
+                return
+            self.coffee = "graos"
+            self.grind = 0.0
+            self.ui.play("colocar", spot)
+            self.ui.say("Café no moedor. Segure B para moer e solte para passar.")
+        elif self.coffee == "graos":
+            self.grinding = True
+            self.ui.loop("moedor", "moedor", spot, pitch=self._grind_pitch())
+        elif self.coffee == "passando":
+            self.ui.say("O café está passando.")
+        else:
+            self._take_coffee()
+
+    def _coffee_up(self):
+        if not self.grinding:
+            return
+        self.grinding = False
+        self.ui.stop("moedor")
+        if self.grind < C.GRIND_MIN:
+            self.ui.say("Ainda está grosso. Segure mais um pouco.")
+            return
+        self.coffee_quality = 1.0 if self.grind <= C.GRIND_MAX else C.BITTER_QUALITY
+        self.coffee = "passando"
+        self.coffee_t = 0.0
+        spot = self._spot(COZINHA, self._at("cafeteira"))
+        self.ui.loop("cafeteira", "cafe_passando", spot)
+        self.ui.say("Passando o café.")
+
+    def _grind_pitch(self):
+        return 0.8 + 0.5 * min(1.0, self.grind / C.GRIND_MAX)
+
+    def _update_coffee(self, dt):
+        if self.coffee is None:
+            return
+        spot = self._spot(COZINHA, self._at("cafeteira"))
+        if self.grinding:
+            before = self.grind
+            self.grind += dt
+            self.ui.loop("moedor", "moedor", spot, pitch=self._grind_pitch())
+            if before < C.GRIND_MIN <= self.grind:
+                self.ui.play("liso", spot)
+            if before < C.GRIND_MAX <= self.grind:
+                self.ui.play("passando", spot)
+        elif self.coffee == "passando":
+            self.coffee_t += dt
+            if self.coffee_t >= C.COFFEE_BREW * self.sf:
+                self.coffee = "pronto"
+                self.coffee_t = 0.0
+                self.ui.stop("cafeteira")
+                self.ui.play("ponto", spot)
+                self.ui.say("Cafezinho pronto na cafeteira.", queue=True)
+        elif self.coffee == "pronto":
+            before = self.coffee_t
+            self.coffee_t += dt
+            limit = C.COFFEE_COOL * self.sf
+            if before < limit <= self.coffee_t:
+                self.coffee_quality = min(self.coffee_quality, C.COLD_COFFEE_QUALITY)
+                self.ui.say("O cafezinho está esfriando na cafeteira.", queue=True)
+
+    def _take_coffee(self):
+        spot = self._spot(COZINHA, self._at("cafeteira"))
+        if len(self.hands) >= C.HANDS:
+            self.ui.say("Suas mãos estão cheias.")
+            return
+        item = Item("cafezinho", quality=self.coffee_quality)
+        self.hands.append(item)
+        self.coffee = None
+        self.ui.play("servir_copo", spot)
+        if self.coffee_quality >= 1.0:
+            self.ui.say("Pegou o cafezinho.")
+        elif self.coffee_t >= C.COFFEE_COOL * self.sf:
+            self.ui.say("Pegou o cafezinho, mas esfriou um pouco.")
+        else:
+            self.ui.say("Pegou o cafezinho, mas amargou um pouco.")
+
+    def _coffee_text(self):
+        return {None: "vazia", "graos": "com café no moedor", "passando": "passando o café",
+                "pronto": "com cafezinho pronto"}[self.coffee]
 
     # --- bancada ---------------------------------------------------------
     def bench_options(self):
@@ -661,7 +757,7 @@ class Service:
 
     # --- pia e lixeira ---------------------------------------------------
     def _sink_action(self):
-        spot = self._spot(COZINHA, STATIONS.index("pia"))
+        spot = self._spot(COZINHA, self._at("pia"))
         dishes = [i for i in self.hands if i.kind == "louca"]
         if dishes:
             for i in dishes:
@@ -678,7 +774,7 @@ class Service:
         return "%d %s na pia" % (n, "prato" if n == 1 else "pratos")
 
     def _trash_action(self):
-        spot = self._spot(COZINHA, STATIONS.index("lixeira"))
+        spot = self._spot(COZINHA, self._at("lixeira"))
         candidates = [i for i in self.hands if i.kind != "louca"]
         if not candidates:
             self.ui.say("Louça vai na pia." if self.hands else "Mãos vazias.")
@@ -694,10 +790,13 @@ class Service:
     def _spot(self, layer, index):
         return (layer, index, len(self.layout[layer]))
 
+    def _at(self, station):
+        return self.layout[COZINHA].index(station)
+
     def spot_name(self, layer, index):
         if layer == SALAO:
             return self.tables[index].name
-        return STATION_NAMES[STATIONS[index]]
+        return STATION_NAMES[self.layout[COZINHA][index]]
 
     def describe(self, layer, index, detail=False):
         if layer == SALAO:
@@ -712,7 +811,7 @@ class Service:
                 text += (", tranquilo" if frac > 0.5 else ", impaciente" if frac > 0.25
                          else ", muito impaciente")
             return text
-        name = STATIONS[index]
+        name = self.layout[COZINHA][index]
         if name in self.cookers:
             return self._station_text(self.cookers[name])
         if name == "liquidificador":
@@ -723,6 +822,8 @@ class Service:
             return "com %s pronto" % D.item_name(self.blender)
         if name == "pia":
             return self._sink_text()
+        if name == "cafeteira":
+            return self._coffee_text()
         if name == "bancada":
             return "pegar e montar"
         return "jogar fora"
@@ -760,7 +861,7 @@ class Service:
             if t.state == "esperando":
                 return any(i.kind in t.order for i in self.hands)
             return False
-        name = STATIONS[index]
+        name = self.layout[COZINHA][index]
         if name in self.cookers:
             s = self.cookers[name]
             return s.fire or any(c.stage >= 1 or (c.turn_cued and not c.turned)
@@ -769,6 +870,8 @@ class Service:
             return self.blender is not None and self.blender not in D.BLENDS
         if name == "pia":
             return any(i.kind == "louca" for i in self.hands)
+        if name == "cafeteira":
+            return self.coffee == "pronto"
         if name == "lixeira":
             return any(i.kind == "queimado" for i in self.hands)
         return False
@@ -776,7 +879,7 @@ class Service:
     def jump(self, delta):
         """L1/R1: a mesa ou estação anterior/seguinte que precisa de você."""
         spots = [(SALAO, i) for i in range(C.TABLES)] + [(COZINHA, i)
-                                                         for i in range(len(STATIONS))]
+                                                         for i in range(len(self.layout[COZINHA]))]
         here = spots.index((self.layer, self.index[self.layer]))
         for k in range(1, len(spots) + 1):
             layer, index = spots[(here + delta * k) % len(spots)]
@@ -798,7 +901,7 @@ class Service:
         if layer == SALAO:
             self._table_action(self.tables[index])
             return
-        name = STATIONS[index]
+        name = self.layout[COZINHA][index]
         if name in self.cookers:
             self._cooker_action(self.cookers[name])
         elif name == "liquidificador":
@@ -808,11 +911,14 @@ class Service:
             self.ui.open_bancada()
         elif name == "pia":
             self._sink_action()
+        elif name == "cafeteira":
+            self._coffee_down()
         else:
             self._trash_action()
 
     def action_up(self):
         self._blender_up()
+        self._coffee_up()
 
     def hands_text(self):
         if not self.hands:
@@ -835,6 +941,8 @@ class Service:
                 parts.append("%s: %s" % (STATION_NAMES[name], self._station_text(s)))
         if self.blender:
             parts.append("Liquidificador %s" % self.describe(COZINHA, 3))
+        if self.coffee:
+            parts.append("Cafeteira %s" % self._coffee_text())
         if not parts:
             parts.append("Salão vazio e cozinha parada")
         if not self.open:
@@ -855,7 +963,7 @@ class Service:
             self.on_closed()
 
     def _stop_loops(self):
-        for key in ("chapa", "fritadeira", "liquidificador", "ambiente"):
+        for key in ("chapa", "fritadeira", "liquidificador", "moedor", "cafeteira", "ambiente"):
             self.ui.stop(key)
 
     def _check_end(self, dt):
@@ -873,12 +981,15 @@ class Service:
     def _finish(self):
         self.finished = True
         self.blending = False
+        self.grinding = False
         self._stop_loops()
         for s in self.cookers.values():
             if s.slots:
                 self.casa.add_dirt("lixo", len(s.slots))
                 s.slots = []
         if self.blender:
+            self.casa.add_dirt("lixo")
+        if self.coffee:
             self.casa.add_dirt("lixo")
         for item in self.hands:
             if item.kind == "louca":

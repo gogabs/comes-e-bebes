@@ -10,7 +10,8 @@ HELP = (
     ("A casa em sons",
      "Você fica no meio da casa. O salão fica à sua frente, com as mesas 1, 2 e 3 da esquerda "
      "para a direita. A cozinha fica atrás, da esquerda para a direita: bancada, chapa, "
-     "fritadeira, liquidificador, pia e lixeira. Cima vai para o salão, baixo para a cozinha, "
+     "fritadeira, liquidificador, pia e lixeira, e a cafeteira no fim, se você comprar uma. "
+     "Cima vai para o salão, baixo para a cozinha, "
      "esquerda e direita andam entre as mesas ou estações. Cada som sai do lugar dele."),
     ("Atender",
      "Quando um cliente senta, a cadeira arrasta na mesa dele, e ele chama para pedir. Aperte "
@@ -24,7 +25,9 @@ HELP = (
      "topo da lista. A cancela. Misto quente: pão, presunto e queijo na bancada, depois na "
      "chapa, virando no meio. X-burger: carne na bancada vira hambúrguer cru; grelhe na chapa "
      "e monte com pão e queijo na bancada. Batata frita: batata na bancada, depois na "
-     "fritadeira, sacudindo no meio; tire e junte o sal na bancada. Suco de laranja: laranja "
+     "fritadeira, sacudindo no meio; tire e junte o sal na bancada. Pastel de queijo: massa e "
+     "queijo na bancada, depois na fritadeira, virando no meio. Coxinha: pegue na bancada e "
+     "frite. A fritadeira leva duas coisas de cada vez. Suco de laranja: laranja "
      "na bancada, leve ao liquidificador e segure B até o som ficar liso. Soltar cedo deixa "
      "pedaço; bater demais esquenta o suco."),
     ("Estações",
@@ -54,8 +57,11 @@ HELP = (
      "lixeira."),
     ("Limpeza e vigilância",
      "Depois que o último cliente sai, a casa fica em silêncio e a sujeira aparece nos sons. "
-     "Mesas e chão: B e esfregue alternando esquerda e direita. Chapa e fritadeira: segure B "
-     "para raspar. Pia: B lava um prato de cada vez. Lixo: B leva para fora. Limpe o quanto "
+     "Mesas e chão: B e esfregue alternando esquerda e direita. Chapa e fritadeira: B e gire o "
+     "analógico em círculos para raspar. Pia: B pega um prato; gire o analógico em círculos, "
+     "e a esponja chia até o prato ranger de limpo. Copo e prato saem com uma volta, prato de "
+     "fritura com duas, e o próximo já vem para a mão. Quem preferir pode girar com o "
+     "direcional: cima, direita, baixo, esquerda. A para de lavar. Lixo: B leva para fora. Limpe o quanto "
      "quiser e, para ir dormir, Start e Ir para casa. O que ficar sujo continua sujo amanhã. "
      "Se a casa dormir suja várias noites, os clientes comentam, chega uma carta da "
      "vigilância sanitária e, depois, uma visita surpresa. Se a fiscal encontrar a casa suja, "
@@ -64,7 +70,10 @@ HELP = (
      "Antes de abrir: compras, cardápio e preços. Ingredientes vêm em pacotes e alguns "
      "estragam em poucos dias. Cada receita tem uma de cinco faixas de preço, de muito barato "
      "a muito caro: barato traz mais gente e mais gorjeta, caro rende mais por prato mas traz "
-     "menos clientes, menos pacientes. O que os fregueses gostam muda com a estação: no verão "
+     "menos clientes, menos pacientes. Na lojinha você compra equipamentos para a casa, como "
+     "a cafeteira, que vai para o fim da cozinha e põe o cafezinho no cardápio. Na cafeteira, "
+     "B põe o grão, segure B para moer e solte para passar; moer pouco deixa o pó grosso e "
+     "moer demais amarga. Quando o café fica pronto, pegue logo, que ele esfria. O que os fregueses gostam muda com a estação: no verão "
      "sai muito suco e batata frita."),
     ("Botões",
      "No expediente: direcional anda, B faz a ação da vez no foco, A detalha o foco, X diz o "

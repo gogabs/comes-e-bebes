@@ -19,7 +19,7 @@ from comes.casa import Casa, money
 from comes.expediente import Service
 from comes.limpeza import Cleaning
 
-game = a11y.Game(repeat=True)
+game = a11y.Game(repeat=True, axes=True, deadzone=0.2)
 SAVE_FILE = os.path.join(game.save_dir, "casa.json")
 sounds = {}
 for f in sorted(os.listdir(os.path.join(game.dir, "sounds"))):
@@ -129,7 +129,7 @@ def on_season(index, item):
     state["casa"] = Casa(season=index)
     write_save()
     game.say("Você pegou as chaves de uma lanchonete pequena, com três mesas, uma chapa, "
-             "uma fritadeira e um liquidificador.", on_done=lambda done: begin_day())
+             "uma fritadeira e um liquidificador. Mais tarde, a lojinha vende uma cafeteira.", on_done=lambda done: begin_day())
 
 
 def close_season():
@@ -169,7 +169,8 @@ def open_opening(item=None):
 
 
 def opening_items():
-    return ["Abrir a casa", "Compras", "Cardápio", "Preços", "Velocidade: " + state["speed"],
+    return ["Abrir a casa", "Compras", "Cardápio", "Preços", "Lojinha",
+            "Velocidade: " + state["speed"],
             "Dinheiro e estoque", "Resumo de ontem", "Salvar e sair"]
 
 
@@ -190,6 +191,10 @@ def on_opening(index, item):
         opening_menu.close()
         prices_menu.items = price_items()
         prices_menu.open(announce_help=False)
+    elif item == "Lojinha":
+        opening_menu.close()
+        store_menu.items = store_items()
+        store_menu.open(announce_help=False)
     elif item.startswith("Velocidade"):
         cycle_speed()
         opening_menu.items = opening_items()
@@ -256,6 +261,45 @@ def back_to_opening(menu, item):
 
 shop_menu = a11y.Menu(game, "Compras", ["Voltar"], on_select=on_shop,
                       on_back=lambda: back_to_opening(shop_menu, "Compras"), sounds=menu_sounds)
+
+
+# lojinha: equipamentos
+def store_items():
+    casa = state["casa"]
+    items = []
+    for k in D.EQUIPMENT_ORDER:
+        name, price, text = D.EQUIPMENT[k][:3]
+        if k in casa.equipment:
+            items.append("%s: já é da casa" % name)
+        else:
+            items.append("%s, %s. %s" % (name, money(price), text))
+    return items + ["Voltar"]
+
+
+def on_store(index, item):
+    if item == "Voltar":
+        back_to_opening(store_menu, "Lojinha")
+        return
+    casa = state["casa"]
+    key = D.EQUIPMENT_ORDER[index]
+    if key in casa.equipment:
+        game.say("A %s já é da casa." % D.EQUIPMENT[key][0].lower())
+        return
+    text = casa.buy_equipment(key)
+    if text is None:
+        ui.play("errado")
+        game.say("Não dá: custa %s e você tem %s." % (money(D.EQUIPMENT[key][1]),
+                                                     money(casa.money)))
+        return
+    write_save()
+    ui.play("caixa")
+    store_menu.items = store_items()
+    game.say("%s Sobram %s." % (text, money(casa.money)))
+
+
+store_menu = a11y.Menu(game, "Lojinha", ["Voltar"], on_select=on_store,
+                       on_back=lambda: back_to_opening(store_menu, "Lojinha"),
+                       sounds=menu_sounds)
 
 
 # cardápio
@@ -598,6 +642,13 @@ def cleaning_button(c, b, st):
         c.jump(-1 if b == "l1" else 1)
     elif b == "start":
         open_pause()
+
+
+@game.on_axis
+def axis(name, value, ms):
+    """O analógico esquerdo gira na limpeza: lavar a louça e raspar o fogo."""
+    if state["phase"] == "limpeza" and state["cleaning"] is not None:
+        state["cleaning"].stick(name, value)
 
 
 @game.on_update

@@ -285,6 +285,21 @@ O que muda com a estação:
 - **Dia das Crianças** (dia 21): 50% mais movimento e gorjeta 30% maior.
 - O fornecedor dá um pacote só dos ingredientes que a casa ainda não tem.
 
+### Receitas novas, lojinha e pia (feito)
+
+- **Pastel de queijo e coxinha**, na fritadeira, desde o primeiro dia. O
+  pastel vira no meio; a coxinha só pede o ponto. A fritadeira passou a
+  levar duas coisas. Saves antigos ganham as duas no cardápio.
+- **Lojinha** na abertura, para equipamentos que são upgrades da casa. A
+  primeira é a **cafeteira** (250 reais), que entra no fim da cozinha e
+  libera o cafezinho: segurar B mói (pouco fica grosso, demais amarga),
+  soltar passa, e o pronto esfria se esperar. Mais pedido no inverno e no
+  outono. Próximos candidatos: fogão com panela (caldo, brigadeiro, pamonha
+  e quentão).
+- **Pia e fogo girando o analógico** na limpeza: a esponja chia seguindo a
+  mão e o prato range de limpo; copo e prato com uma volta, prato de
+  fritura com duas. O direcional também gira.
+
 ## 11. Primeiro protótipo
 
 Só a lanchonete, para testar se o ritmo é gostoso:

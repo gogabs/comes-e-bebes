@@ -2,8 +2,11 @@
 
 Mesmo `ui` do expediente (say, play, loop, stop). O tempo anda por update(dt).
 """
+import random
+
 from . import config as C
 from .expediente import join
+from .giro import Spinner
 
 SALAO, COZINHA = 0, 1
 # (chave da sujeira, nome falado, jeito de limpar, som de ambiente)
@@ -19,8 +22,9 @@ SPOTS = (
      ("lixo", "Lixo", "levar", "lixo_cheio")),
 )
 HOW = {"esfregar": "Aperte B e esfregue com esquerda e direita.",
-       "raspar": "Segure B para raspar.",
-       "lavar": "Aperte B para lavar cada prato.",
+       "raspar": "Aperte B e gire o analógico, ou o direcional, em círculos.",
+       "lavar": "Aperte B para pegar um prato e gire o analógico, ou o direcional, em "
+                "círculos.",
        "levar": "Aperte B para levar o lixo para fora."}
 
 
@@ -35,9 +39,10 @@ def dirt_words(key, n):
 
 
 class Cleaning:
-    def __init__(self, casa, ui, on_done=None):
+    def __init__(self, casa, ui, on_done=None, rng=None):
         self.casa = casa
         self.ui = ui
+        self.rng = rng or random.Random()
         self.on_done = on_done
         self.layout = (list(SPOTS[0]), list(SPOTS[1]))
         self.layer = COZINHA
@@ -45,9 +50,10 @@ class Cleaning:
         self.scrubbing = None        # (camada, índice) sendo esfregado
         self.last_side = None
         self.strokes = 0
-        self.scraping = False
-        self.scrape_t = 0.0
-        self.wash_wait = 0.0
+        self.spinning = None         # "raspar" ou "lavar", na pia ou no fogo
+        self.spinner = Spinner()
+        self.quarters = 0
+        self.plate = None            # (nome, voltas) do prato na mão
         self.busy = 0.0              # levando o lixo
         self.ambient_t = C.AMBIENT_EVERY
         self.ambient_next = 0
@@ -97,10 +103,6 @@ class Cleaning:
                 self.casa.dirt["lixo"] = 0
                 self.ui.play("lixo_fora")
                 self.ui.say("Lixo lá fora.")
-        if self.wash_wait > 0:
-            self.wash_wait -= dt
-        if self.scraping:
-            self._scrape(dt)
         self.ambient_t -= dt
         if self.ambient_t <= 0:
             self.ambient_t = C.AMBIENT_EVERY
@@ -118,8 +120,7 @@ class Cleaning:
 
     def go_home(self):
         self.done = True
-        self.scraping = False
-        self.ui.stop("raspar")
+        self.spinning = None
         if self.on_done:
             self.on_done()
 
@@ -132,6 +133,9 @@ class Cleaning:
         self.ui.say("%s%s, %s." % (prefix, spot[1], self.describe(layer, index)))
 
     def step(self, delta):
+        if self.spinning:
+            self.spin_pad("left" if delta < 0 else "right")
+            return
         if self.scrubbing:
             self._stroke(delta)
             return
@@ -144,6 +148,9 @@ class Cleaning:
         self.announce_focus()
 
     def go_layer(self, layer):
+        if self.spinning:
+            self.spin_pad("up" if layer == 0 else "down")
+            return
         if self.scrubbing:
             return
         if layer == self.layer:
@@ -153,7 +160,7 @@ class Cleaning:
         self.announce_focus(with_layer=True)
 
     def jump(self, delta):
-        if self.scrubbing:
+        if self.scrubbing or self.spinning:
             return
         spots = [(l, i) for l in (SALAO, COZINHA) for i in range(len(self.layout[l]))]
         here = spots.index((self.layer, self.index[self.layer]))
@@ -175,6 +182,9 @@ class Cleaning:
         if self.scrubbing:
             self._stop_scrub("Parou de esfregar.")
             return
+        if self.spinning:
+            self._stop_spin("Parou de " + ("lavar." if self.spinning == "lavar" else "raspar."))
+            return
         spot = self._here()
         pos = self._spot(self.layer, self.index[self.layer])
         if self._dirt(spot) == 0:
@@ -188,34 +198,29 @@ class Cleaning:
             self.ui.play("pegar", pos)
             self.ui.say("Esfregando. Esquerda e direita, alternando. A ou B para parar.")
         elif how == "raspar":
-            self.scraping = True
-            self.ui.loop("raspar", "raspar", pos)
+            self._start_spin("raspar")
+            self.ui.play("pegar", pos)
+            self.ui.say("Raspando. Gire o analógico ou o direcional em círculos. A ou B para "
+                        "parar.")
         elif how == "lavar":
-            if self.wash_wait > 0:
-                return
-            self.wash_wait = C.WASH_TIME
-            self.casa.dirt["louca"] -= 1
-            n = self.casa.dirt["louca"]
-            self.ui.play("lavar", pos, pitch=1.0 + 0.4 / (1 + n))
-            if n == 0:
-                self.ui.say("Última louça lavada.")
+            self._start_spin("lavar")
+            self._next_plate("Lavando. Gire o analógico ou o direcional em círculos. A ou B "
+                             "para parar. ")
         else:
             self.busy = C.TRASH_TIME
             self.ui.play("passos", pos)
             self.ui.say("Levando o lixo para fora.")
 
     def action_up(self):
-        if self.scraping:
-            self.scraping = False
-            self.ui.stop("raspar")
-            spot = self._here()
-            if self._dirt(spot) > 0:
-                self.ui.say("%s: %s." % (spot[1], dirt_words(spot[0], self._dirt(spot))))
+        pass
 
     def back(self):
         """A: para de esfregar; fora disso, diz como limpar o que está em foco."""
         if self.scrubbing:
             self._stop_scrub("Parou de esfregar.")
+            return
+        if self.spinning:
+            self._stop_spin("Parou de " + ("lavar." if self.spinning == "lavar" else "raspar."))
             return
         spot = self._here()
         if self._dirt(spot) == 0:
@@ -245,14 +250,66 @@ class Cleaning:
                      self._spot(self.layer, self.index[self.layer]))
         self.ui.say(text)
 
-    def _scrape(self, dt):
-        spot = self._here()
-        self.scrape_t += dt
-        if self.scrape_t >= C.SCRAPE_TIME:
-            self.scrape_t = 0.0
-            self.casa.dirt[spot[0]] = max(0, self.casa.dirt[spot[0]] - 1)
-            if self.casa.dirt[spot[0]] == 0:
-                self.scraping = False
-                self.ui.stop("raspar")
-                self.ui.play("brilho", self._spot(self.layer, self.index[self.layer]))
-                self.ui.say("%s limpinha." % spot[1])
+    # --- girar: raspar o fogo e lavar a louça ---------------------------
+    def _start_spin(self, how):
+        self.spinning = how
+        self.spinner.reset()
+        self.quarters = 0
+
+    def _stop_spin(self, text, sound="pegar"):
+        self.spinning = None
+        self.plate = None
+        self.ui.play(sound, self._spot(self.layer, self.index[self.layer]))
+        self.ui.say(text)
+
+    def stick(self, axis, value):
+        """O analógico esquerdo mexeu."""
+        if self.spinning and not self.paused:
+            self._turned(self.spinner.stick(axis, value))
+
+    def spin_pad(self, direction):
+        self._turned(self.spinner.pad(direction))
+
+    def _turned(self, quarters):
+        for _ in range(quarters):
+            if not self.spinning:
+                return
+            self._quarter()
+
+    def _quarter(self):
+        layer, index = self.layer, self.index[self.layer]
+        spot = self.layout[layer][index]
+        # o som sai do lado do círculo em que a mão está
+        pos = (layer, index + 0.4 * self.spinner.side, len(self.layout[layer]))
+        self.quarters += 1
+        if self.spinning == "raspar":
+            need = 4 * C.SCRAPE_TURNS
+            self.ui.play("raspar_giro", pos, pitch=0.9 + 0.3 * self.quarters / need)
+            if self.quarters >= need:
+                self.quarters = 0
+                self.casa.dirt[spot[0]] = max(0, self.casa.dirt[spot[0]] - 1)
+                if self.casa.dirt[spot[0]] == 0:
+                    self._stop_spin("%s limpinha." % spot[1], "brilho")
+            return
+        need = 4 * self.plate[1]
+        self.ui.play("esponja", pos, pitch=0.85 + 0.35 * self.quarters / need)
+        if self.quarters < need:
+            return
+        self.quarters = 0
+        self.casa.dirt["louca"] = max(0, self.casa.dirt["louca"] - 1)
+        self.ui.play("prato_limpo", self._spot(layer, index))
+        name = self.plate[0]
+        if self.casa.dirt["louca"] == 0:
+            self._stop_spin("%s limpo. Era a última louça." % name.capitalize(), "brilho")
+            return
+        self._next_plate("%s limpo. " % name.capitalize())
+
+    def _next_plate(self, prefix):
+        names = [p[0] for p in C.PLATES]
+        weights = [p[2] for p in C.PLATES]
+        name = self.rng.choices(names, weights)[0]
+        self.plate = next(p for p in C.PLATES if p[0] == name)
+        n = self.casa.dirt["louca"]
+        self.ui.play("louca", self._spot(self.layer, self.index[self.layer]), volume=0.6)
+        self.ui.say("%s%s na mão. %s." % (prefix, name.capitalize(), "É o último" if n == 1
+                                            else "Faltam %d na pia" % n))

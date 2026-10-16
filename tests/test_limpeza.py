@@ -1,3 +1,5 @@
+import math
+import random
 import unittest
 
 from helpers import FakeUI, run
@@ -11,21 +13,58 @@ def new_cleaning():
     casa = Casa()
     ui = FakeUI()
     done = []
-    c = Cleaning(casa, ui, on_done=lambda: done.append(True))
+    c = Cleaning(casa, ui, on_done=lambda: done.append(True), rng=random.Random(2))
     return c, ui, casa, done
 
 
 class LimpezaTest(unittest.TestCase):
-    def test_lavar_louca(self):
+    def test_lavar_louca_girando_o_analogico(self):
         c, ui, casa, _ = new_cleaning()
         casa.dirt["louca"] = 2
         c.action_down()
-        c.action_down()                  # cedo demais: ignora
-        self.assertEqual(casa.dirt["louca"], 1)
-        run(c, C.WASH_TIME + 0.1)
-        c.action_down()
+        self.assertEqual(c.spinning, "lavar")
+        self.assertIn("na mão", ui.last())
+        turns = 0
+        while casa.dirt["louca"] and turns < 20:
+            for a in range(0, 360, 30):          # uma volta, de 30 em 30 graus
+                c.stick("lx", math.cos(math.radians(a)))
+                c.stick("ly", -math.sin(math.radians(a)))
+            turns += 1
         self.assertEqual(casa.dirt["louca"], 0)
-        self.assertIn("Última louça", ui.last())
+        self.assertIsNone(c.spinning)
+        self.assertIn("última louça", ui.last())
+        self.assertIn("esponja", ui.played)
+        self.assertIn("prato_limpo", ui.played)
+
+    def test_lavar_com_o_direcional(self):
+        c, ui, casa, _ = new_cleaning()
+        casa.dirt["louca"] = 1
+        c.action_down()
+        need = 4 * c.plate[1]
+        c.go_layer(0)                            # cima
+        for d in ("right", "down", "left", "up", "right", "down", "left", "up")[:need]:
+            if d in ("up", "down"):
+                c.go_layer(0 if d == "up" else 1)
+            else:
+                c.step(-1 if d == "left" else 1)
+        self.assertEqual(casa.dirt["louca"], 0)
+
+    def test_analogico_parado_no_centro_nao_conta(self):
+        c, _, casa, _ = new_cleaning()
+        casa.dirt["louca"] = 1
+        c.action_down()
+        for a in range(0, 720, 30):
+            c.stick("lx", 0.2 * math.cos(math.radians(a)))
+            c.stick("ly", 0.2 * math.sin(math.radians(a)))
+        self.assertEqual(casa.dirt["louca"], 1)
+
+    def test_a_para_de_lavar(self):
+        c, ui, casa, _ = new_cleaning()
+        casa.dirt["louca"] = 3
+        c.action_down()
+        c.back()
+        self.assertIsNone(c.spinning)
+        self.assertIn("Parou de lavar", ui.last())
 
     def test_esfregar_mesa(self):
         c, ui, casa, _ = new_cleaning()
@@ -43,15 +82,19 @@ class LimpezaTest(unittest.TestCase):
         self.assertIsNone(c.scrubbing)
         self.assertIn("limpinho", ui.last())
 
-    def test_raspar_chapa(self):
+    def test_raspar_chapa_girando(self):
         c, ui, casa, _ = new_cleaning()
         casa.dirt["chapa"] = 2
         c.index[COZINHA] = 1
         c.action_down()
-        self.assertIn("raspar", ui.loops)
-        run(c, C.SCRAPE_TIME * 2 + 0.2)
+        self.assertEqual(c.spinning, "raspar")
+        for _ in range(2 * C.SCRAPE_TURNS + 1):
+            for a in range(0, 360, 30):
+                c.stick("lx", math.cos(math.radians(a)))
+                c.stick("ly", math.sin(math.radians(a)))
         self.assertEqual(casa.dirt["chapa"], 0)
-        self.assertNotIn("raspar", ui.loops)
+        self.assertIsNone(c.spinning)
+        self.assertIn("limpinha", ui.last())
 
     def test_lixo(self):
         c, _, casa, _ = new_cleaning()

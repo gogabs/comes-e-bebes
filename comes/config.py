@@ -42,9 +42,11 @@ COOK = {
     "batata_crua": (16.0, 7.0, 8.0, 10.0),
     "pao_manteiga": (8.0, 6.0, 7.0, 10.0),
     "queijo_montado": (10.0, 7.0, 8.0, 10.0),
+    "pastel_cru": (10.0, 6.0, 7.0, 10.0),
+    "coxinha_crua": (12.0, 7.0, 8.0, 10.0),
 }
 CHAPA_SLOTS = 2
-FRITADEIRA_SLOTS = 1
+FRITADEIRA_SLOTS = 2
 # Virar o misto e sacudir a batata: janela em fração do tempo até o ponto.
 TURN_WINDOW = (0.35, 1.0)
 MISSED_TURN_QUALITY = 0.7     # misto que não foi virado
@@ -53,6 +55,14 @@ PASSING_QUALITY = 0.6         # tirado passando do ponto
 BLEND_MIN = 2.5               # segurar B no liquidificador até ficar liso
 BLEND_MAX = 5.0               # depois disso o suco esquenta
 WARM_JUICE_QUALITY = 0.6
+
+# Cafeteira: segurar B para moer, soltar para passar.
+GRIND_MIN = 2.0               # antes disso o pó fica grosso
+GRIND_MAX = 4.0               # depois disso o café amarga
+BITTER_QUALITY = 0.7
+COFFEE_BREW = 6.0             # passando o café
+COFFEE_COOL = 30.0            # pronto e esperando: depois disso esfria
+COLD_COFFEE_QUALITY = 0.7
 
 FIRE_SPREAD = 20.0            # fogo sem apagar passa para a estação vizinha
 EXTINGUISH_TIME = 2.0
@@ -88,8 +98,10 @@ INSPECTION_WITHIN = (1, 3)    # a visita vem entre 1 e 3 dias depois da carta
 INSPECTION_TIME = (0.2, 0.7)  # em que parte do expediente a visita chega
 
 SCRUB_STROKES = 4             # esfregadas (esquerda e direita) por unidade de sujeira
-SCRAPE_TIME = 1.2             # segundos segurando B por unidade de gordura
-WASH_TIME = 0.4               # entre um prato lavado e outro
+SCRAPE_TURNS = 1              # voltas do analógico por unidade de gordura
+# Louça na pia: (nome, voltas do analógico para lavar, chance).
+PLATES = (("copo", 1, 0.35), ("prato", 1, 0.4), ("prato de fritura", 2, 0.25))
+SPIN_MIN = 0.5                # o analógico precisa sair tanto assim do centro para contar
 TRASH_TIME = 2.5              # levar o lixo para fora
 AMBIENT_EVERY = 2.5           # um som de sujeira a cada tanto, na limpeza
 AMBIENT_VOLUME = 0.25         # som de fundo da estação, no expediente

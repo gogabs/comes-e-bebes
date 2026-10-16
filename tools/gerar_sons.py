@@ -248,6 +248,22 @@ def main():
             offsets.append(start + k * 0.11)
             gains.append(rng.uniform(0.15, 0.3))
     write("primavera", crossfade_loop(mix(*chirps, offsets=offsets, gains=gains)), 0.5, loop=True)
+    # cafeteira: moedor zumbindo com grão estalando, e o café passando, gotejando
+    write("moedor", crossfade_loop(mix(env(saw(95, 1.5, 0.3, 30), lambda x: 0.6),
+                                       noise(1.5, 0.4, shape=lambda x: 0.5),
+                                       pops(1.5, 40, 0.3, 0.006),
+                                       gains=[0.35, 0.4, 0.8])), 0.55, loop=True)
+    drips = [tone(rng.uniform(900, 1400), 0.12, 1, 0.03, glide=0.6) for _ in range(9)]
+    write("cafe_passando", crossfade_loop(mix(noise(3.0, 0.9, shape=lambda x: 0.4), *drips,
+                                              offsets=[0] + [0.15 + k * 0.31 for k in range(9)],
+                                              gains=[0.5] + [0.35] * 9)), 0.45, loop=True)
+    # pia e fogo girando: esponja, prato rangendo de limpo e a palha de aço
+    write("esponja", mix(noise(0.16, 0.55, shape=hump), pops(0.16, 5, 0.6, 0.01),
+                         gains=[0.8, 0.5]), 0.45)
+    write("prato_limpo", mix(sweep(1800, 2600, 0.12, 2, 0.06), sweep(2100, 3000, 0.1, 2, 0.05),
+                             offsets=[0, 0.09]), 0.45)
+    write("raspar_giro", mix(noise(0.18, 0.05, shape=hump), pops(0.18, 6, 0.2, 0.008),
+                             gains=[0.7, 0.6]), 0.5)
     print("sons gerados em %s" % os.path.normpath(OUT))
 
 
