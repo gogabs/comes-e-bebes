@@ -611,11 +611,10 @@ class Service:
         spot = self._spot(COZINHA, self._at("cafeteira"))
         if self.coffee is None:
             beans = next((i for i in self.hands if i.kind == "cafe_graos"), None)
-            if beans is not None:
-                self.hands.remove(beans)
-            elif not self.casa.take("cafe"):
-                self.ui.say("Acabou o café em grão. Compre na abertura.")
+            if beans is None:
+                self.ui.say("Cafeteira vazia. Pegue o café em grão na bancada.")
                 return
+            self.hands.remove(beans)
             self.coffee = "graos"
             self.grind = 0.0
             self.ui.play("colocar", spot)

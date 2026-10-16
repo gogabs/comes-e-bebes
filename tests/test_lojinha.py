@@ -97,10 +97,10 @@ class LojinhaTest(unittest.TestCase):
 
     def test_cafezinho(self):
         s, ui, casa, _, _ = new_service(casa=com_cafeteira())
+        bench(s, "ing:cafe")
         focus(s, COZINHA, s.layout[COZINHA].index("cafeteira"))
-        before = casa.count("cafe")
         s.action_down()
-        self.assertEqual(casa.count("cafe"), before - 1)
+        self.assertEqual(s.coffee, "graos")
         s.action_down()
         self.assertIn("moedor", ui.loops)
         run(s, 1.0)
@@ -130,8 +130,18 @@ class LojinhaTest(unittest.TestCase):
         self.assertEqual(s.coffee, "graos")
         self.assertEqual(casa.count("cafe"), before - 1)     # não gastou outro
 
+    def test_cafeteira_sem_grao_na_mao(self):
+        s, ui, casa, _, _ = new_service(casa=com_cafeteira())
+        before = casa.count("cafe")
+        focus(s, COZINHA, s.layout[COZINHA].index("cafeteira"))
+        s.action_down()
+        self.assertIsNone(s.coffee)
+        self.assertEqual(casa.count("cafe"), before)
+        self.assertIn("Pegue o café em grão na bancada", ui.last())
+
     def test_moer_demais_amarga_e_esperar_esfria(self):
         s, ui, _, _, _ = new_service(casa=com_cafeteira())
+        bench(s, "ing:cafe")
         focus(s, COZINHA, s.layout[COZINHA].index("cafeteira"))
         s.action_down()
         s.action_down()
