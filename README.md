@@ -69,6 +69,24 @@ menos suco de laranja, e o expediente tem vento e folhas ao fundo.
 No dia 12 é **Dia das Mães**: a casa enche de famílias, que pedem mais e
 deixam gorjetas maiores.
 
+## Na tela
+
+O jogo é feito para ser jogado só pelo som, e tudo o que aparece na tela
+também é falado. A tela é um extra para quem enxerga um pouco, para jogar
+junto com alguém, ou só para ficar bonito: o salão em cima, com os clientes,
+o que eles pediram e a paciência de cada um; a cozinha embaixo, com o ponto
+de cada coisa no fogo; e, no rodapé, o que está nas suas mãos e a última fala
+como legenda. O foco amarelo mostra onde você está. A tela segue a opção de
+tela do sistema e a economia de energia.
+
+| Expediente | Limpeza |
+|---|---|
+| ![Expediente no verão](docs/telas/expediente.png) | ![Limpeza à noite](docs/telas/limpeza.png) |
+| ![Dia de São João, com fogo na fritadeira](docs/telas/inverno-sao-joao.png) | ![Abertura](docs/telas/abertura.png) |
+
+As prévias saem de `python3 tools/previas.py` (precisa da Pillow), e os
+ícones das comidas, de `python3 tools/gerar_imagens.py`.
+
 ## Pastel, coxinha e a lojinha
 
 O pastel de queijo (massa e queijo na bancada, fritadeira, virar no meio) e

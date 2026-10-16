@@ -28,7 +28,7 @@ fi
 PKG=$(mktemp -d)
 trap 'rm -rf "$PKG"' EXIT
 mkdir -p "$PKG/comes-e-bebes"
-cp -r "$HERE/game.json" "$HERE/main.py" "$HERE/comes" "$HERE/sounds" "$SDK_PY" "$PKG/comes-e-bebes/"
+cp -r "$HERE/game.json" "$HERE/main.py" "$HERE/comes" "$HERE/sounds" "$HERE/images" "$SDK_PY" "$PKG/comes-e-bebes/"
 find "$PKG" -name __pycache__ -prune -exec rm -rf {} +
 
 tar -C "$PKG" -czf - comes-e-bebes | ssh "$HOST" '
@@ -36,4 +36,4 @@ tar -C "$PKG" -czf - comes-e-bebes | ssh "$HOST" '
   rm -rf .comes-e-bebes.novo && mkdir .comes-e-bebes.novo
   tar -xzf - -C .comes-e-bebes.novo
   rm -rf comes-e-bebes && mv .comes-e-bebes.novo/comes-e-bebes . && rmdir .comes-e-bebes.novo
-  echo "instalado: $(ls comes-e-bebes/sounds | wc -l) sons"; df -h /opt/a11y | tail -1'
+  echo "instalado: $(ls comes-e-bebes/sounds | wc -l) sons, $(ls comes-e-bebes/images | wc -l) imagens"; df -h /opt/a11y | tail -1'

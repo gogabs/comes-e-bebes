@@ -18,6 +18,7 @@ from comes import texts as T
 from comes.casa import Casa, money
 from comes.expediente import Service
 from comes.limpeza import Cleaning
+from comes.tela import Renderer, Scene
 
 game = a11y.Game(repeat=True, axes=True, deadzone=0.2)
 SAVE_FILE = os.path.join(game.save_dir, "casa.json")
@@ -115,6 +116,15 @@ class UI:
 
 
 ui = UI()
+
+
+def scene():
+    """O que a tela mostra agora. Sem fase, é a fachada do menu principal."""
+    casa = state["casa"] if state["phase"] else None
+    return Scene(state["phase"], casa, state["service"], state["cleaning"])
+
+
+Renderer(game, scene)
 
 
 # --- dia -------------------------------------------------------------------------

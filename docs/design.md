@@ -300,6 +300,18 @@ O que muda com a estação:
   mão e o prato range de limpo; copo e prato com uma volta, prato de
   fritura com duas. O direcional também gira.
 
+### Gráficos (feito)
+
+- A casa vista de frente: salão em cima (parede com a cor da estação,
+  janela com o clima, bandeirinhas nas datas especiais), cozinha embaixo,
+  e um rodapé com as mãos e a legenda da última fala.
+- Clientes com rosto que muda com a paciência, balão com o pedido, barra de
+  paciência; comida no fogo com barra de ponto, aviso de virar e fogo.
+- Limpeza à noite com as manchas, a gordura, a pilha de louça e a esponja
+  girando junto com o analógico. Menus num painel por cima da casa.
+- Nada existe só na tela. A tela respeita a opção do sistema e a economia
+  de energia, e um defeito de vídeo só desliga os gráficos.
+
 ## 11. Primeiro protótipo
 
 Só a lanchonete, para testar se o ritmo é gostoso:
