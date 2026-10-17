@@ -20,7 +20,7 @@ fi
 [ -d "$SDK_PY" ] || { echo "SDK não encontrado."; exit 1; }
 echo "SDK selecionada: $SDK_PY"
 
-if ssh "$HOST" 'for p in /proc/[0-9]*; do readlink "$p/cwd"; done 2>/dev/null | grep -q "^/opt/a11y/games/comes-e-bebes"'; then
+if ssh "$HOST" 'for p in /proc/[0-9]*; do readlink "$p/cwd"; done 2>/dev/null | grep -Eq "^/(roms|opt)/a11y/games/comes-e-bebes(/|$)"'; then
   echo "O Comes e Bebes está aberto no console. Feche o jogo e rode de novo."
   exit 1
 fi
@@ -32,8 +32,9 @@ cp -r "$HERE/game.json" "$HERE/main.py" "$HERE/comes" "$HERE/sounds" "$HERE/imag
 find "$PKG" -name __pycache__ -prune -exec rm -rf {} +
 
 tar -C "$PKG" -czf - comes-e-bebes | ssh "$HOST" '
-  set -e; cd /opt/a11y/games
+  set -e; mkdir -p /roms/a11y/games; cd /roms/a11y/games
   rm -rf .comes-e-bebes.novo && mkdir .comes-e-bebes.novo
-  tar -xzf - -C .comes-e-bebes.novo
+  tar -xzmf - -C .comes-e-bebes.novo
   rm -rf comes-e-bebes && mv .comes-e-bebes.novo/comes-e-bebes . && rmdir .comes-e-bebes.novo
-  echo "instalado: $(ls comes-e-bebes/sounds | wc -l) sons, $(ls comes-e-bebes/images | wc -l) imagens"; df -h /opt/a11y | tail -1'
+  rm -rf /opt/a11y/games/comes-e-bebes
+  echo "instalado: $(ls comes-e-bebes/sounds | wc -l) sons, $(ls comes-e-bebes/images | wc -l) imagens"; df -h /roms | tail -1'
