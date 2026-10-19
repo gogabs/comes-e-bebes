@@ -94,7 +94,7 @@ extras (gorjeta).
 
 ## 4. Controles
 
-Seguem o padrão do SDK e dos outros jogos: B (o botão de baixo) confirma e A
+Seguem o padrão do Mage Core e dos outros jogos: B (o botão de baixo) confirma e A
 volta; Start pausa, Y status, Select lê tudo.
 
 | Botão | O quê |
