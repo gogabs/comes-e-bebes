@@ -140,13 +140,13 @@ pegando fogo) apaga, mas deixa sujeira.
 
 ## Rodar
 
-No PC (Windows, com o SDK clonado ao lado ou a cópia em `r36s_a11y/`):
+No PC (Windows, com o Mage Core clonado ao lado ou a cópia em `r36s_a11y/`):
 
 ```bat
 python main.py
 ```
 
-No console, com o SDK clonado ao lado deste repositório:
+No console, com o Mage Core clonado ao lado deste repositório:
 
 ```bash
 ./instalar.sh
@@ -168,7 +168,7 @@ Os números do equilíbrio ficam em `comes/config.py` e as receitas e estações
 em `comes/data.py`. A lógica em `comes/` não toca som nem fala: `casa.py` é o
 que vai para o save (dinheiro, estoque, calendário, sujeira, vigilância),
 `expediente.py` é o salão e a cozinha em tempo real e `limpeza.py` é o fim do
-dia. `main.py` liga tudo ao SDK.
+dia. `main.py` liga tudo ao Mage Core.
 
 Os sons em `sounds/` são provisórios, gerados por código. Para trocar um, ponha
 um WAV ou OGG com o mesmo nome e apague o provisório.

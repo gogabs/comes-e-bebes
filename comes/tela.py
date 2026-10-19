@@ -5,7 +5,7 @@ Nada aqui é necessário para jogar: tudo o que aparece na tela também é falad
 A tela segue a opção do sistema (SCREEN=0 desliga) e a economia de energia.
 
 `draw_frame(gfx, ...)` só lê o estado do jogo e só usa a API de desenho do
-SDK, então roda com o SDK de verdade, com o gráfico de mentira dos testes e
+Mage Core, então roda com o Mage Core de verdade, com o gráfico de mentira dos testes e
 com o gerador de prévias (tools/previas.py).
 """
 import math

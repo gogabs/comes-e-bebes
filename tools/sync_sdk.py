@@ -1,4 +1,4 @@
-"""Refresh the bundled SDK fallback from a clean SDK Git checkout."""
+"""Refresh the bundled Mage Core fallback from a clean Mage Core Git checkout."""
 import argparse
 import hashlib
 import json
@@ -15,10 +15,10 @@ def main():
     args=parser.parse_args()
     source=args.sdk.resolve()
     if subprocess.check_output(['git','-C',str(source),'status','--porcelain']).strip():
-        raise SystemExit('SDK checkout has local changes; commit or select a clean checkout')
+        raise SystemExit('Mage Core checkout has local changes; commit or select a clean checkout')
     commit=subprocess.check_output(['git','-C',str(source),'rev-parse','HEAD']).decode().strip()
     package=source/'python/r36s_a11y'
-    if not (package/'graphics.py').is_file(): raise SystemExit('SDK graphics API is missing')
+    if not (package/'graphics.py').is_file(): raise SystemExit('Mage Core graphics API is missing')
     target=ROOT/'r36s_a11y'
     files=[p for p in package.rglob('*') if p.is_file() and '__pycache__' not in p.parts and p.suffix!='.pyc']
     hashes={}
@@ -35,7 +35,7 @@ def main():
         if file.relative_to(target).as_posix() not in hashes:
             file.unlink()
     (ROOT/'sdk-origin.json').write_text(json.dumps({'repository':'gogabs/r36s-a11y-sdk','commit':commit,'sha256':hashes},indent=2)+'\n',encoding='utf8')
-    print('SDK fallback synchronized at '+commit)
+    print('Mage Core fallback synchronized at '+commit)
 
 
 if __name__=='__main__': main()
